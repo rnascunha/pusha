@@ -1,0 +1,3 @@
+[submodule "third/ecec"]
+	path = third/ecec
+	url = https://github.com/web-push-libs/ecec
