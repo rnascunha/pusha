@@ -4,15 +4,13 @@
 #include <getopt.h>
 
 #include <openssl/bn.h>
-#include <openssl/ec.h>
-#include <openssl/obj_mac.h>
 #include <openssl/sha.h>
-#include <openssl/pem.h>
 
 #include <ece.h>
 #include <ece/keys.h>
 
-#include "vapid.h"
+#include "pusha/ec_keys.h"
+#include "pusha/vapid.h"
 
 #define VAPID_HEADER "{\"alg\":\"ES256\",\"typ\":\"JWT\"}"
 #define VAPID_HEADER_LENGTH 27
@@ -244,12 +242,12 @@ vapid_build_token(EC_KEY* key, const char* aud, size_t audLen, uint32_t exp,
 	sigBase =
 	vapid_build_signature_base(aud, audLen, exp, sub, subLen, &sigBaseLen);
 	if (!sigBase) {
-	goto error;
+		goto error;
 	}
 	size_t sigLen;
 	sig = vapid_sign(key, sigBase, sigBaseLen, &sigLen);
 	if (!sig) {
-	goto error;
+		goto error;
 	}
 
 	// The token comprises the base string, another `.`, and the encoded
@@ -281,135 +279,17 @@ end:
 	return token;
 }
 
-static EC_KEY*
-vapid_import_private_key(const char* b64PrivKeyPemFormat)
-{
-	size_t pv_key_len = strlen(b64PrivKeyPemFormat);
-	BIO *mem = BIO_new(BIO_s_mem());
-	if ((size_t)BIO_write(mem, b64PrivKeyPemFormat, pv_key_len) != pv_key_len)
-	{
-		return NULL;
-	}
-
-	EC_KEY *EC_KEY_ptr = PEM_read_bio_ECPrivateKey(mem , NULL, NULL, NULL);
-	BIO_free_all(mem);
-
-	if(EC_KEY_ptr == NULL)
-	{
-		return NULL;
-	}
-
-	 if(EC_KEY_check_key(EC_KEY_ptr) == 0)
-	 {
-	      return NULL;
-	 }
-	 return EC_KEY_ptr;
-}
-
-static EC_KEY*
-vapid_generate_keys()
-{
-	EC_KEY* key = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
-	if (!key)
-	{
-		return NULL;
-	}
-
-	if (EC_KEY_generate_key(key) != 1)
-	{
-		EC_KEY_free(key);
-		return NULL;
-	}
-	return key;
-}
-
-static char*
-vapid_export_private_key(EC_KEY* key)
-{
-	uint8_t rawPrivKey[ECE_WEBPUSH_PRIVATE_KEY_LENGTH];
-	if (!EC_KEY_priv2oct(key, rawPrivKey, ECE_WEBPUSH_PRIVATE_KEY_LENGTH))
-	{
-		return NULL;
-	}
-	size_t b64PrivKeyLen =
-	ece_base64url_encode(rawPrivKey, ECE_WEBPUSH_PRIVATE_KEY_LENGTH,
-						 ECE_BASE64URL_OMIT_PADDING, NULL, 0);
-	if (!b64PrivKeyLen)
-	{
-		return NULL;
-	}
-
-	char* b64PrivKey = malloc(b64PrivKeyLen + 1);
-	if (!b64PrivKey)
-	{
-		return NULL;
-	}
-	ece_base64url_encode(rawPrivKey, ECE_WEBPUSH_PRIVATE_KEY_LENGTH,
-					   ECE_BASE64URL_OMIT_PADDING, b64PrivKey, b64PrivKeyLen);
-	b64PrivKey[b64PrivKeyLen] = '\0';
-
-	return b64PrivKey;
-}
-
-static char*
-vapid_export_public_key(EC_KEY* key)
-{
-	uint8_t rawPubKey[ECE_WEBPUSH_PUBLIC_KEY_LENGTH];
-	if (!EC_POINT_point2oct(EC_KEY_get0_group(key), EC_KEY_get0_public_key(key),
-						  POINT_CONVERSION_UNCOMPRESSED, rawPubKey,
-						  ECE_WEBPUSH_PUBLIC_KEY_LENGTH, NULL))
-	{
-		return NULL;
-	}
-	size_t b64PubKeyLen =
-	ece_base64url_encode(rawPubKey, ECE_WEBPUSH_PUBLIC_KEY_LENGTH,
-						 ECE_BASE64URL_OMIT_PADDING, NULL, 0);
-	char* b64PubKey = malloc(b64PubKeyLen + 1);
-	if (!b64PubKey)
-	{
-		return NULL;
-	}
-	ece_base64url_encode(rawPubKey, ECE_WEBPUSH_PUBLIC_KEY_LENGTH,
-					   ECE_BASE64URL_OMIT_PADDING, b64PubKey, b64PubKeyLen);
-	b64PubKey[b64PubKeyLen] = '\0';
-
-	return b64PubKey;
-}
-
-bool make_vapid(struct vapid* vapid_token,
-				const char* audience, const char* subscriber, uint32_t expiration, const char* b64_pem_priv_key)
+bool generate_vapid(vapid* vapid_token,
+				const char* audience,
+				size_t audience_len,
+				const char* subscriber,
+				size_t subscriber_len,
+				uint32_t expiration,
+				EC_KEY* key)
 {
 	bool ok = true;
 
-	const char* aud = audience;
-	uint32_t exp = expiration;
-	const char* sub = subscriber;
-	EC_KEY* key = NULL;
-
-	if (!b64_pem_priv_key)
-	{
-		printf("Generating keys...\n");
-		key = vapid_generate_keys();
-		if (!key)
-		{
-			fprintf(stderr, "vapid: Error generating EC keys\n");
-			ok = false;
-			goto end;
-		}
-	}
-	else
-	{
-		printf("Importing keys...\n");
-		key = vapid_import_private_key(b64_pem_priv_key);
-		if (!key)
-		{
-			fprintf(stderr, "vapid: Invalid EC private key\n");
-			ok = false;
-			goto end;
-		}
-	}
-
-	vapid_token->private_key = vapid_export_private_key(key);
+	vapid_token->private_key = export_private_key(key);
 	if (!vapid_token->private_key)
 	{
 		fprintf(stderr, "vapid: Error exporting private key\n");
@@ -417,7 +297,7 @@ bool make_vapid(struct vapid* vapid_token,
 		goto end;
 	}
 
-	vapid_token->public_key = vapid_export_public_key(key);
+	vapid_token->public_key = export_public_key(key);
 	if (!vapid_token->public_key)
 	{
 		fprintf(stderr, "vapid: Error exporting public key\n");
@@ -425,37 +305,34 @@ bool make_vapid(struct vapid* vapid_token,
 		goto end;
 	}
 
-	vapid_token->token = vapid_build_token(key, aud, strlen(aud), exp, sub, strlen(sub));
+	vapid_token->token = vapid_build_token(key,
+						audience,
+						audience_len,
+						expiration,
+						subscriber,
+						subscriber_len);
+
 	if (!vapid_token->token)
 	{
 		fprintf(stderr, "vapid: Error signing token\n");
 		ok = false;
 		goto end;
 	}
-
-	printf("Private key: %s\n", vapid_token->private_key);
-	printf("Public key: %s\n", vapid_token->public_key);
-	printf("Expiry: %" PRIu32 "\n", exp);
-	printf("Token: %s\n", vapid_token->token);
-
 end:
 	if(!ok)
 	{
-		EC_KEY_free(key);
-		destroy_vapid(vapid_token);
+		free_vapid(vapid_token);
 	}
 
 	return ok;
 }
 
-void destroy_vapid(struct vapid* token)
+void free_vapid(vapid* token)
 {
 	free(token->public_key);
 	free(token->private_key);
 	free(token->token);
 
-	token->public_key = NULL;
-	token->private_key = NULL;
-	token->token = NULL;
+	memset(token, 0, sizeof(vapid));
 }
 

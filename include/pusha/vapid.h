@@ -3,20 +3,27 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <openssl/ec.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
-struct vapid{
+typedef struct {
 	char* public_key;
 	char* private_key;
 	char* token;
-};
+}vapid;
 
-bool make_vapid(struct vapid*, const char* audit, const char* sub, uint32_t exp, const char* b64_priv_key);
+bool generate_vapid(vapid*,
+				const char* audit,
+				size_t audit_len,
+				const char* sub,
+				size_t sub_len,
+				uint32_t exp,
+				EC_KEY* key);
 
-void destroy_vapid(struct vapid*);
+void free_vapid(vapid*);
 
 #ifdef __cplusplus
 }

@@ -3,97 +3,213 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "vapid.h"
-#include <ece.h>
+#include "pusha/error.h"
+#include "pusha/web_push.h"
+#include "pusha/vapid.h"
 
-int
-make_web_push(const char* endpoint,
-				const char* p256dh,
-				const char* auth,
-				struct vapid* token,
-				const char* plaintext)
+bool decode_subscription(push_subscription* sub,
+						const char* endpoint,
+						const char* p256dh_base64,
+						const char* auth_base64)
 {
-	size_t plaintextLen = strlen(plaintext);
+	sub->endpoint = endpoint;
 
-	size_t padLen = 0;
+	size_t p256_len = ece_base64url_decode(
+								p256dh_base64, strlen(p256dh_base64), ECE_BASE64URL_REJECT_PADDING,
+								sub->p256dh, ECE_WEBPUSH_PUBLIC_KEY_LENGTH);
+	if(!p256_len) return false;
 
-	uint8_t rawRecvPubKey[ECE_WEBPUSH_PUBLIC_KEY_LENGTH];
-	size_t rawRecvPubKeyLen =
-	ece_base64url_decode(p256dh, strlen(p256dh), ECE_BASE64URL_REJECT_PADDING,
-						 rawRecvPubKey, ECE_WEBPUSH_PUBLIC_KEY_LENGTH);
-	assert(rawRecvPubKeyLen > 0);
-	uint8_t authSecret[ECE_WEBPUSH_AUTH_SECRET_LENGTH];
-	size_t authSecretLen =
-	ece_base64url_decode(auth, strlen(auth), ECE_BASE64URL_REJECT_PADDING,
-						 authSecret, ECE_WEBPUSH_AUTH_SECRET_LENGTH);
-	assert(authSecretLen > 0);
+	size_t auth_len = ece_base64url_decode(
+								auth_base64, strlen(auth_base64), ECE_BASE64URL_REJECT_PADDING,
+								sub->auth, ECE_WEBPUSH_AUTH_SECRET_LENGTH);
+	if(!auth_len) return false;
 
-	size_t ciphertextLen = ece_aesgcm_ciphertext_max_length(
-							ECE_WEBPUSH_DEFAULT_RS, padLen, plaintextLen);
-	assert(ciphertextLen > 0);
-	uint8_t* ciphertext = calloc(ciphertextLen, sizeof(uint8_t));
-	assert(ciphertext);
+	return true;
+}
 
-	// Encrypt the plaintext and fetch encryption parameters for the headers.
-	// `salt` holds the encryption salt, which we include in the `Encryption`
-	// header. `rawSenderPubKey` holds the ephemeral sender, or app server,
-	// public key, which we include as the `dh` parameter in the `Crypto-Key`
-	// header. `ciphertextLen` is an in-out parameter set to the actual ciphertext
-	// length.
-	uint8_t salt[ECE_SALT_LENGTH];
-	uint8_t rawSenderPubKey[ECE_WEBPUSH_PUBLIC_KEY_LENGTH];
+bool encode_subscription(push_subscription_base64* sub_b64,
+							push_subscription* sub)
+{
+	bool ret = true;
+
+	sub_b64->endpoint = sub->endpoint;
+
+	size_t b64_p256dh_len = ece_base64url_encode(
+	    sub->p256dh, ECE_WEBPUSH_PUBLIC_KEY_LENGTH, ECE_BASE64URL_OMIT_PADDING, NULL, 0);
+	sub_b64->p256dh = calloc(b64_p256dh_len + 1, sizeof(uint8_t));
+	if(!sub_b64->p256dh)
+	{
+		ret = false;
+		goto end;
+	}
+	ece_base64url_encode(
+		    sub->p256dh, ECE_WEBPUSH_PUBLIC_KEY_LENGTH, ECE_BASE64URL_OMIT_PADDING, sub_b64->p256dh, b64_p256dh_len);
+	sub_b64->p256dh[b64_p256dh_len] = '\0';
+
+	size_t b64_auth_len = ece_base64url_encode(
+		sub->auth, ECE_WEBPUSH_AUTH_SECRET_LENGTH, ECE_BASE64URL_OMIT_PADDING, NULL, 0);
+	sub_b64->auth = calloc(b64_auth_len + 1, sizeof(uint8_t));
+	if(!sub_b64->auth)
+	{
+		ret = false;
+		goto end;
+	}
+	ece_base64url_encode(
+			sub->auth, ECE_WEBPUSH_PUBLIC_KEY_LENGTH, ECE_BASE64URL_OMIT_PADDING, sub_b64->auth, b64_auth_len);
+	sub_b64->auth[b64_auth_len] = '\0';
+
+end:
+	if(!ret)
+		free_push_subscription_base64(sub_b64);
+
+	return ret;
+}
+
+void free_push_subscription_base64(push_subscription_base64* sub_b64)
+{
+	free(sub_b64->p256dh);
+	free(sub_b64->auth);
+
+	memset(sub_b64, 0, sizeof(push_subscription_base64));
+}
+
+int make_push_payload(push_payload* pp,
+						push_subscription* sub,
+						const void* payload, size_t payload_len,
+						size_t pad_len)
+{
+	pp->cipher_payload_len = ece_aesgcm_ciphertext_max_length(
+								ECE_WEBPUSH_DEFAULT_RS, pad_len, payload_len);
+	if(!pp->cipher_payload_len) return ECE_ERROR_ZERO_CIPHERTEXT;
+
+	pp->cipher_payload = calloc(pp->cipher_payload_len, sizeof(uint8_t));
+	if(!pp->cipher_payload) return ECE_ERROR_OUT_OF_MEMORY;
+
 	int err = ece_webpush_aesgcm_encrypt(
-		rawRecvPubKey, rawRecvPubKeyLen,
-		authSecret, authSecretLen,
-		ECE_WEBPUSH_DEFAULT_RS, padLen,
-		plaintext, plaintextLen,
-		salt, ECE_SALT_LENGTH,
-		rawSenderPubKey, ECE_WEBPUSH_PUBLIC_KEY_LENGTH,
-		ciphertext, &ciphertextLen);
-	assert(err == ECE_OK);
+		sub->p256dh, ECE_WEBPUSH_PUBLIC_KEY_LENGTH,
+		sub->auth, ECE_WEBPUSH_AUTH_SECRET_LENGTH,
+		ECE_WEBPUSH_DEFAULT_RS, pad_len,
+		payload, payload_len,
+		pp->salt, ECE_SALT_LENGTH,
+		pp->sender_public_key, ECE_WEBPUSH_PUBLIC_KEY_LENGTH,
+		pp->cipher_payload, &pp->cipher_payload_len);
 
-	// Build the `Crypto-Key` and `Encryption` HTTP headers. First, we pass
-	// `NULL`s for `cryptoKeyHeader` and `encryptionHeader`, and 0 for their
-	// lengths, to calculate the lengths of the buffers we need. Then, we
-	// allocate, write out, and null-terminate the headers.
+	return err;
+}
+
+void free_push_payload(push_payload* payload)
+{
+	if(payload->cipher_payload_len)
+		free(payload->cipher_payload);
+
+	memset(payload, 0, sizeof(push_payload));
+}
+
+static int
+make_encrypt_header(push_http_headers* headers,
+					push_payload* pp)
+{
 	size_t cryptoKeyHeaderLen = 0;
 	size_t encryptionHeaderLen = 0;
+	int err = ECE_OK;
+
+	/* getting sizes of headers */
 	err = ece_webpush_aesgcm_headers_from_params(
-						salt, ECE_SALT_LENGTH,
-						rawSenderPubKey, ECE_WEBPUSH_PUBLIC_KEY_LENGTH, ECE_WEBPUSH_DEFAULT_RS,
+						pp->salt, ECE_SALT_LENGTH,
+						pp->sender_public_key, ECE_WEBPUSH_PUBLIC_KEY_LENGTH, ECE_WEBPUSH_DEFAULT_RS,
 						NULL, &cryptoKeyHeaderLen,
 						NULL, &encryptionHeaderLen);
-	assert(err == ECE_OK);
+	if(err != ECE_OK) goto end;
 	// Allocate an extra byte for the null terminator.
-	char* cryptoKeyHeader = calloc(cryptoKeyHeaderLen + 1, 1);
-	assert(cryptoKeyHeader);
-	char* encryptionHeader = calloc(encryptionHeaderLen + 1, 1);
-	assert(encryptionHeader);
+	headers->crypto_key_payload = calloc(cryptoKeyHeaderLen + 1, 1);
+	if(!headers->crypto_key_payload)
+	{
+		err = ECE_ERROR_OUT_OF_MEMORY;
+		goto end;
+	}
+
+	headers->encryption = calloc(encryptionHeaderLen + 1, 1);
+	if(!headers->encryption)
+	{
+		err = ECE_ERROR_OUT_OF_MEMORY;
+		goto end;
+	}
+
 	err = ece_webpush_aesgcm_headers_from_params(
-						salt, ECE_SALT_LENGTH,
-						rawSenderPubKey, ECE_WEBPUSH_PUBLIC_KEY_LENGTH, ECE_WEBPUSH_DEFAULT_RS,
-						cryptoKeyHeader, &cryptoKeyHeaderLen,
-						encryptionHeader, &encryptionHeaderLen);
-	assert(err == ECE_OK);
-	cryptoKeyHeader[cryptoKeyHeaderLen] = '\0';
-	encryptionHeader[encryptionHeaderLen] = '\0';
+						pp->salt, ECE_SALT_LENGTH,
+						pp->sender_public_key, ECE_WEBPUSH_PUBLIC_KEY_LENGTH, ECE_WEBPUSH_DEFAULT_RS,
+						headers->crypto_key_payload, &cryptoKeyHeaderLen,
+						headers->encryption, &encryptionHeaderLen);
+	if(err != ECE_OK)
+		goto end;
 
-	const char* filename = "aesgcm.bin";
-	FILE* ciphertextFile = fopen(filename, "wb");
-	assert(ciphertextFile);
-	size_t ciphertextFileLen =
-	fwrite(ciphertext, sizeof(uint8_t), ciphertextLen, ciphertextFile);
-	assert(ciphertextLen == ciphertextFileLen);
-	fclose(ciphertextFile);
+	headers->crypto_key_payload[cryptoKeyHeaderLen] = '\0';
+	headers->encryption[encryptionHeaderLen] = '\0';
+end:
+	if(err != ECE_OK)
+	{
+		free(headers->crypto_key_payload);
+		free(headers->encryption);
 
-	printf("curl -v -X POST -H \"Authorization: WebPush %s\" -H \"Content-Encoding: aesgcm\" -H \"Crypto-Key: "
-		 "keyid=%s;p256ecdsa=%s;%s\" -H \"Encryption: %s\" -H \"TTL: 60\" --data-binary @%s %s\n",
-		 token->token, p256dh, token->public_key,
-		 cryptoKeyHeader, encryptionHeader, filename, endpoint);
+		headers->crypto_key_payload = NULL;
+		headers->encryption = NULL;
+	}
 
-	free(ciphertext);
-	free(cryptoKeyHeader);
-	free(encryptionHeader);
-
-	return 0;
+	return err;
 }
+
+int make_push_http_headers(push_http_headers* headers,
+					vapid* token,
+					push_payload* pp)
+{
+	int ret = ECE_OK;
+	size_t size;
+
+	if(pp)
+	{
+		//Headers specific to Push with payload
+		ret = make_encrypt_header(headers, pp);
+		if(ret != ECE_OK)
+			goto end;
+	}
+
+	size = snprintf(NULL, 0, "p256ecdsa=%s", token->public_key);
+	headers->crypto_key = calloc(size + 1, 1);
+	if(!headers->crypto_key)
+	{
+		ret = ECE_ERROR_OUT_OF_MEMORY;
+		goto end;
+	}
+	snprintf(headers->crypto_key, size + 1, "p256ecdsa=%s", token->public_key);
+
+	size = snprintf(NULL, 0, "WebPush %s", token->token);
+	headers->authorization = calloc(size + 1, 1);
+	if(!headers->authorization)
+	{
+		ret = ECE_ERROR_OUT_OF_MEMORY;
+		goto end;
+	}
+	snprintf(headers->authorization, size + 1, "WebPush %s", token->token);
+end:
+	if(ret != ECE_OK)
+	{
+		free(headers->authorization);
+		free(headers->crypto_key);
+
+		headers->authorization = NULL;
+		headers->crypto_key = NULL;
+	}
+
+	return ret;
+}
+
+void free_push_http_headers(push_http_headers* headers)
+{
+	free(headers->authorization);
+	free(headers->crypto_key);
+	free(headers->crypto_key_payload);
+	free(headers->encryption);
+
+	memset(headers, 0, sizeof(push_http_headers));
+}
+
