@@ -83,7 +83,7 @@ Where:
 ```
 Five arguments are mandatory:
 * *-p <pem_priv_file>*: the private key (can be generate with the [genkey](#genkey) tool above);
-* *<sub>* (subscriber): a information of contact. A URL or a email (e.g *mailto:email@company.com*);
+* *sub* (subscriber): a information of contact. A URL or a email (e.g *mailto:email@company.com*);
 * *p256dh*, *auth* and *endpoint*: this information is received when the user allows to receive a push notification. Your application is responsible to keep this information for each user. When the user subscribe, it will present to you a information in a JSON format, like this:
 
 ```JSON
@@ -132,12 +132,12 @@ $ ./push -v -p priv.pem maito:email@company.com BMkGGRuBBhQf8H2s_I2Xz2487IaKqmP9
 *+ SSL packet sent[853]
 * Wating response...
 *+ Received 602 bytes
-*- ERROR sending Web push request
+*+ Web push request sent successfully
 > HTTP response: 201 Created
 ```
 Output with verbose mode on (-v).
 
-	The **push** tool is a good source to learn how to the **pusha** library. It construct the push request step by step using some "internal" structures, learning how to manipulate the library.
+> The **push** tool is a good source to learn how to the **pusha** library. It construct the push request step by step using some "internal" structures, learning how to manipulate the library.
 ## Examples
 
 There is two examples that shows how to use the **Pusha** library. The examples will print the information as a HTTP request should be. Both examples begin importing the *private* key from a PEM file. The only diference is the interface used:
@@ -151,5 +151,5 @@ The examples are equivalent, it only changes the structure that holds the values
 * [RFC8030](https://datatracker.ietf.org/doc/html/rfc8030) - Generic Event Delivery Using HTTP Push;
 * [RFC8292](https://datatracker.ietf.org/doc/html/rfc8292) - Voluntary Application Server Identification (VAPID) for Web Push;
 * [JSON Web Token](https://jwt.io/);
-* [Push codelabs](https://developers.google.com/web/fundamentals/codelabs/push-notifications) - It provides a web page to test the push notitication (but use **pusha** instead to send message ;-) ). When it says *Application Server Keys*, is the public pair of the *private* key generated;
+* [Push codelabs](https://developers.google.com/web/fundamentals/codelabs/push-notifications) - It provides a web page to test the push notitication (but use **pusha** instead to send message :kissing_heart:). When it says *Application Server Keys*, is the public pair of the *private* key generated;
 * [HTTP internals](https://blog.mozilla.org/services/2016/08/23/sending-vapid-identified-webpush-notifications-via-mozillas-push-service/) - good explanation of the how to generate/use keys and create the HTTP headers;
