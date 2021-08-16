@@ -63,7 +63,7 @@ This will allows you to send push notification at command line.
 ```bash
 $ ./push -h
 Usage:
-	./push -h|-p <pem_priv_file> [-v]
+	./push -h|(-p <pem_priv_file>|-b <base64_priv_key>) [-v]
 		[-m <message>] [-e <expire_time_seconds>]
 		[-o send|curl|print] [-l <ttl>]
 		<sub> <p256dh> <auth> <endpoint>
@@ -75,14 +75,15 @@ Where:
 	<endpoint>	endpoint (received at push subscription)
 	-v	verbose mode
 	-h	this help message
-	-p	pem file with EC private key
+	-p	pem file with EC private key (don't use with '-b')
+	-b	base64 encoded private key (don't use with '-p')
 	-e	seconds to expire time (default 12h, i.e 12 * 60 * 60)
 	-o	set output type. Options: 'send' (default), 'curl' or 'print'
 	-l	set http ttl value (default = 0)
 	-m	message payload to send
 ```
 Five arguments are mandatory:
-* *-p <pem_priv_file>*: the private key (can be generate with the [genkey](#genkey) tool above);
+* *-p <pem_priv_file>*|*-b <base64_priv_key>*: the private key (can be generate with the [genkey](#genkey) tool above);
 * *sub* (subscriber): a information of contact. A URL or a email (e.g *mailto:email@company.com*);
 * *p256dh*, *auth* and *endpoint*: this information is received when the user allows to receive a push notification. Your application is responsible to keep this information for each user. When the user subscribe, it will present to you a information in a JSON format, like this:
 
@@ -151,5 +152,5 @@ The examples are equivalent, it only changes the structure that holds the values
 * [RFC8030](https://datatracker.ietf.org/doc/html/rfc8030) - Generic Event Delivery Using HTTP Push;
 * [RFC8292](https://datatracker.ietf.org/doc/html/rfc8292) - Voluntary Application Server Identification (VAPID) for Web Push;
 * [JSON Web Token](https://jwt.io/);
-* [Push codelabs](https://developers.google.com/web/fundamentals/codelabs/push-notifications) - It provides a web page to test the push notitication (but use **pusha** instead to send message :kissing_heart:). When it says *Application Server Keys*, is the public pair of the *private* key generated;
+* [Push codelabs](https://developers.google.com/web/fundamentals/codelabs/push-notifications) - It provides a web page to test the push notitication (but use **pusha** instead to send message :kissing_heart:). When it says *Application Server Keys*, is the public pair of the keys generated;
 * [HTTP internals](https://blog.mozilla.org/services/2016/08/23/sending-vapid-identified-webpush-notifications-via-mozillas-push-service/) - good explanation of the how to generate/use keys and create the HTTP headers;
