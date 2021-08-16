@@ -30,7 +30,7 @@ extern "C" {
  * @retval 0 success
  * @retval Other failure
  */
-int pusha(push_http_headers* headers,
+int pusha_notify(push_http_headers* headers,
 			push_payload* pp,
 			EC_KEY*	key,
 			const char* endpoint,
@@ -59,7 +59,7 @@ int pusha(push_http_headers* headers,
  * @retval 0 success
  * @retval Other failure
  */
-int pusha_http(http_request* req,
+int pusha_notify_http(http_request* req,
 			EC_KEY*	key,
 			const char* endpoint,
 			const char* subscriber,

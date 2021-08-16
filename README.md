@@ -33,8 +33,16 @@ $ cd build
 $ cmake ..
 $ cmake --build .
 ```
-This will build the **Pusha** library (*libpusha.a* at linux), both tools and all the examples.
+This will build the **Pusha** library (*libpusha.a* at linux). If you want to build the [tools](#tools) and/or the examples,
+add the following arguments to the `cmake` command:
+
+```
+$ cmake -DWITH_TOOLS=1 -DWITH_EXAMPLES=1 ..
+```
 ## Tools
+
+> Build **pusha** with -DWITH_TOOLS=1 to compile the tools.
+
 ### genkey
 
 This tool will create a pair of *private*/*public* key that is needed to make push requests. It prints the keys in base64 encoded, and also export in PEM format.
@@ -138,12 +146,14 @@ $ ./push -v -p priv.pem maito:email@company.com BMkGGRuBBhQf8H2s_I2Xz2487IaKqmP9
 ```
 Output with verbose mode on (-v).
 
-> The **push** tool is a good source to learn how to the **pusha** library. It construct the push request step by step using some "internal" structures, learning how to manipulate the library.
+> The **push** tool is a good source to learn how to use the **pusha** library. It construct the push request step by step using some "internal" structures, learning how to manipulate the library.
 ## Examples
 
+> Build **pusha** with -DWITH_EXAMPLES=1 to compile the examples.
+
 There is two examples that shows how to use the **Pusha** library. The examples will print the information as a HTTP request should be. Both examples begin importing the *private* key from a PEM file. The only diference is the interface used:
-* *web_push*: call the **pusha** function, that populates the *push_http_headers* and *push_payload* (if any payload is present);
-* *web_push_http*: call the **pusha_http** function, that populates the *http_header*;
+* *web_push*: call the **pusha_notify** function, that populates the *push_http_headers* and *push_payload* (if any payload is present);
+* *web_push_http*: call the **pusha_notify_http** function, that populates the *http_header*;
 
 The examples are equivalent, it only changes the structure that holds the values. The description of the function/structures can be checked at *pusha.h*, *pusha/web_push.h* and *pusha/http.h*.
 

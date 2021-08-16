@@ -1,7 +1,7 @@
 #include "pusha.h"
 #include <string.h>
 
-int pusha(push_http_headers* headers,
+int pusha_notify(push_http_headers* headers,
 			push_payload* pp,
 			EC_KEY*	key,
 			const char* endpoint,
@@ -56,7 +56,7 @@ end:
 	return ret;
 }
 
-int pusha_http(http_request* req,
+int pusha_notify_http(http_request* req,
 			EC_KEY*	key,
 			const char* endpoint,
 			const char* subscriber,
@@ -72,7 +72,7 @@ int pusha_http(http_request* req,
 	push_http_headers headers = {};
 	headers.ttl = ttl;
 
-	int err = pusha(&headers,
+	int err = pusha_notify(&headers,
 			&pp,
 			key,
 			endpoint,

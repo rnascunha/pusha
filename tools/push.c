@@ -360,7 +360,7 @@ int main(int argc, char** argv)
 end:
 	free_push_payload(&pp);
 	free_vapid(&token);
-	free_key(key);
+	EC_KEY_free(key);
 	free_push_http_headers(&headers);
 	return ret;
 }

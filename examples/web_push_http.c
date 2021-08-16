@@ -90,7 +90,7 @@ int main()
 	 */
 	http_request req;
 
-	int err = pusha_http(&req,
+	int err = pusha_notify_http(&req,
 			key,
 			endpoint,
 			subscriber,

@@ -104,7 +104,7 @@ int main()
 	push_http_headers headers = {};
 	headers.ttl = ttl;
 
-	int err = pusha(&headers,
+	int err = pusha_notify(&headers,
 			payload_len ? &pp : NULL,
 			key,
 			endpoint,

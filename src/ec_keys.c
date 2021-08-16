@@ -2,7 +2,6 @@
 #include "ece/keys.h"
 #include "ece.h"
 
-//#include <stdio.h>
 #include <string.h>
 
 #include <openssl/pem.h>
@@ -24,11 +23,6 @@ EC_KEY* generate_keys()
 		return NULL;
 	}
 	return key;
-}
-
-void free_key(EC_KEY* key)
-{
-	EC_KEY_free(key);
 }
 
 EC_KEY* import_private_key_base64(const char* b64_string)
@@ -100,7 +94,7 @@ EC_KEY* import_private_key_pem_file(const char* path)
 	return EC_KEY_ptr;
 }
 
-char* export_private_key(EC_KEY* key)
+char* export_private_key(EC_KEY const* key)
 {
 	uint8_t rawPrivKey[ECE_WEBPUSH_PRIVATE_KEY_LENGTH];
 	if (!EC_KEY_priv2oct(key, rawPrivKey, ECE_WEBPUSH_PRIVATE_KEY_LENGTH))
@@ -173,7 +167,7 @@ int export_public_key_pem(EC_KEY* key, const char* path)
 	return ECE_OK;
 }
 
-char* export_public_key(EC_KEY* key)
+char* export_public_key(EC_KEY const* key)
 {
 	uint8_t rawPubKey[ECE_WEBPUSH_PUBLIC_KEY_LENGTH];
 	if (!EC_POINT_point2oct(EC_KEY_get0_group(key), EC_KEY_get0_public_key(key),

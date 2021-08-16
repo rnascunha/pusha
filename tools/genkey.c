@@ -133,7 +133,7 @@ int main(int argc, char** argv)
 end:
 	free(private);
 	free(public);
-	free_key(key);
+	EC_KEY_free(key);
 
 	return ret;
 }
