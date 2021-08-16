@@ -10,7 +10,7 @@ extern "C" {
 EC_KEY* generate_keys();
 void free_key(EC_KEY*);
 
-EC_KEY* import_private_key2(const char* b64_string);
+EC_KEY* import_private_key_base64(const char* b64_string);
 EC_KEY* import_private_key(const char* b64PrivKeyPemFormat);
 EC_KEY* import_private_key_pem_file(const char* path);
 

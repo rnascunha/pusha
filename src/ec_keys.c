@@ -1,6 +1,8 @@
 #include "pusha/ec_keys.h"
+#include "ece/keys.h"
 #include "ece.h"
-#include <stdio.h>
+
+//#include <stdio.h>
 #include <string.h>
 
 #include <openssl/pem.h>
@@ -29,30 +31,22 @@ void free_key(EC_KEY* key)
 	EC_KEY_free(key);
 }
 
-EC_KEY* import_private_key2(const char* b64_string)
+EC_KEY* import_private_key_base64(const char* b64_string)
 {
-	printf("1\n");
 	uint8_t octo[ECE_WEBPUSH_PRIVATE_KEY_LENGTH];
-	size_t size = ece_base64url_decode(b64_string, strlen(b64_string), ECE_BASE64URL_REJECT_PADDING, octo, ECE_WEBPUSH_PRIVATE_KEY_LENGTH);
-	printf("Size: %zu\n", size);
+	size_t size = ece_base64url_decode(b64_string, strlen(b64_string),
+						ECE_BASE64URL_REJECT_PADDING, octo, ECE_WEBPUSH_PRIVATE_KEY_LENGTH);
 	if(!size)
 	{
 		return NULL;
 	}
 
-	printf("2\n");
-	EC_KEY* key = EC_KEY_new();
-	if(!key) return NULL;
-
-	printf("3\n");
-	if(!EC_KEY_oct2priv(key, octo, ECE_WEBPUSH_PRIVATE_KEY_LENGTH))
-//	if(!EC_KEY_oct2key(key, octo, ECE_WEBPUSH_PRIVATE_KEY_LENGTH, NULL))
+	EC_KEY* key = ece_import_private_key(octo, ECE_WEBPUSH_PRIVATE_KEY_LENGTH);
+	if(!key)
 	{
-		EC_KEY_free(key);
 		return NULL;
 	}
 
-	printf("4\n");
 	return key;
 }
 

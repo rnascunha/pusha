@@ -11,14 +11,10 @@
 
 void usage(const char* program)
 {
-//	printf("Usage:\n\t%s -h|-p <pem_priv_file>|-b <base64_priv_key> [-v]\n\t\t[-m <message>] "
-//						"[-e <expire_time_seconds>]\n\t\t"
-//						"[-o send|curl|print] [-l <ttl>]\n\t\t"
-//						"<sub> <p256dh> <auth> <endpoint>\n", program);
-	printf("Usage:\n\t%s -h|-p <pem_priv_file> [-v]\n\t\t[-m <message>] "
-							"[-e <expire_time_seconds>]\n\t\t"
-							"[-o send|curl|print] [-l <ttl>]\n\t\t"
-							"<sub> <p256dh> <auth> <endpoint>\n", program);
+	printf("Usage:\n\t%s -h|(-p <pem_priv_file>|-b <base64_priv_key>) [-v]\n\t\t[-m <message>] "
+						"[-e <expire_time_seconds>]\n\t\t"
+						"[-o send|curl|print] [-l <ttl>]\n\t\t"
+						"<sub> <p256dh> <auth> <endpoint>\n", program);
 	printf("\nWhere:\n");
 	printf("\t<sub>\tvapid subscriber (e.g. mainto:email@company.com)\n");
 	printf("\t<p256dh>\tpublic server key (received at push subscription)\n");
@@ -26,10 +22,9 @@ void usage(const char* program)
 	printf("\t<endpoint>\tendpoint (received at push subscription)\n");
 	printf("\t-v\tverbose mode\n");
 	printf("\t-h\tthis help message\n");
-	printf("\t-p\tpem file with EC private key\n");
-//	printf("\t-p\tpem file with EC private key (don't use with '-b')\n");
-//	printf("\t-b\tbase64 encoded private key (don't use with '-p')\n");
-	printf("\t-e\tseconds to expire time (default 12h, i.e 12 * 60 * 60)\n");
+	printf("\t-p\tpem file with EC private key (don't use with '-b')\n");
+	printf("\t-b\tbase64 encoded private key (don't use with '-p')\n");
+	printf("\t-e\tseconds to expire time (default 12h, i.e, 12 * 60 * 60)\n");
 	printf("\t-o\tset output type. Options: 'send' (default), 'curl' or 'print'\n");
 	printf("\t-l\tset http ttl value (default = 0)\n");
 	printf("\t-m\tmessage payload to send\n");
@@ -51,9 +46,9 @@ int main(int argc, char** argv)
 
 	enum Output output = output_send;
 
-	vapid token = {};
-	push_payload pp = {}; ///* Used only if payload != NULL
-	push_http_headers headers = {};
+	vapid token = {0,};
+	push_payload pp = {0,}; ///* Used only if payload != NULL
+	push_http_headers headers = {0,};
 
 	int i = 1, pos_arg = 0;
 	argc--;
@@ -115,31 +110,31 @@ int main(int argc, char** argv)
 			}
 			argc--;
 		}
-//		else if(strcmp(argv[i], "-b") == 0)
-//		{
-//			//Base64 private key
-//			if(argc == 1)
-//			{
-//				PUSHA_ERROR("'-b' option must have a argument\n");
-//				usage(argv[0]);
-//				return 1;
-//			}
-//			if(key)
-//			{
-//				PUSHA_ERROR("Private key already set. Use option '-p' or '-b'\n");
-//				usage(argv[0]);
-//				ret = 1;
-//				goto end;
-//			}
-//			key = import_private_key2(argv[++i]);
-//			if(!key)
-//			{
-//				PUSHA_ERROR("Error importing private key [%s]\n", argv[i]);
-//				ret = 1;
-//				goto end;
-//			}
-//			argc--;
-//		}
+		else if(strcmp(argv[i], "-b") == 0)
+		{
+			//Base64 private key
+			if(argc == 1)
+			{
+				PUSHA_ERROR("'-b' option must have a argument\n");
+				usage(argv[0]);
+				return 1;
+			}
+			if(key)
+			{
+				PUSHA_ERROR("Private key already set. Use option '-p' or '-b'\n");
+				usage(argv[0]);
+				ret = 1;
+				goto end;
+			}
+			key = import_private_key_base64(argv[++i]);
+			if(!key)
+			{
+				PUSHA_ERROR("Error importing private key [%s]\n", argv[i]);
+				ret = 1;
+				goto end;
+			}
+			argc--;
+		}
 		else if(strcmp(argv[i], "-e") == 0)
 		{
 			//expiration time
