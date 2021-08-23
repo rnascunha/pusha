@@ -7,7 +7,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-size_t host_path_separator(const char* endpoint, char** host_start);
+size_t host_path_separator(const char* endpoint, size_t endpoint_len, char** host_start);
 
 #ifdef __cplusplus
 }

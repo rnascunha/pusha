@@ -107,10 +107,10 @@ int main()
 	int err = pusha_notify(&headers,
 			payload_len ? &pp : NULL,
 			key,
-			endpoint,
-			subscriber,
-			p256dh,
-			auth,
+			endpoint, strlen(endpoint),
+			subscriber, strlen(subscriber),
+			p256dh, strlen(p256dh),
+			auth, strlen(auth),
 			expiration,
 			payload,
 			payload_len);
@@ -127,9 +127,9 @@ int main()
 	 * Here we are going to print this information simulating a HTTP request
 	 */
 #ifndef CURL_OUTPUT
-	print_http_request(endpoint, &headers, payload_len ? pp.cipher_payload : NULL, payload_len);
+	print_http_request(endpoint, strlen(endpoint), &headers, payload_len ? pp.cipher_payload : NULL, payload_len);
 #else
-	char* out = curl_output(endpoint, &headers, payload_len ? pp.cipher_payload : NULL, payload_len);
+	char* out = curl_output(endpoint, strlen(endpoint), &headers, payload_len ? pp.cipher_payload : NULL, payload_len);
 	if(!out)
 	{
 		err = 2;

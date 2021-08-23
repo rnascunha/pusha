@@ -35,6 +35,7 @@ typedef struct{
 
 int make_http_request(pusha_http_request*,
 					const char* endpoint,
+					size_t endpoint_len,
 					pusha_http_headers*,
 					const void* cypher_payload, size_t payload_len,
 					Pusha_HTTP_Version ver);
@@ -43,11 +44,13 @@ void free_http_header(pusha_http_header*);
 void free_http_request(pusha_http_request*);
 
 char* http_request_header_serialize(const char* endpoint,
+		size_t endpoint_len,
 		pusha_http_headers*,
 		const void* cypher_payload, size_t payload_len,
 		size_t* header_size);
 
 uint8_t* http_request_serialize(const char* endpoint,
+		size_t endpoint_len,
 		pusha_http_headers*,
 		const void* cypher_payload, size_t payload_len,
 		size_t* packet_size);

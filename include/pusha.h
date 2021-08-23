@@ -20,9 +20,13 @@ extern "C" {
  * @param pp[out]			holds payload encrypt data necessary to make push request. Can be NULL if no payload
  * @param key[in]			EC key to encrypt/decrypt
  * @param endpoint[in]		Endpoint of user (received with subscription)
+ * @param endpoint_len[in]	Endpoint length
  * @param subscriber[in]	Contact information (a URL or a main, e.g "mailto:email@company.com")
+ * @param subscriber_len[in]	Subscriber length
  * @param p256dh[in]		Server public key (received with subscription)
+ * @param p256dh_len[in]	Server public key length
  * @param auth[in]			Authentication secret (received with subscription)
+ * @param auth_len[in]		Authentication secret length
  * @param expiration[in]	Time the push request is still valid
  * @param payload[in]		Payload of request (can be NULL if no payload)
  * @param payload_len[in]	Payload len (0 if no payload)
@@ -31,15 +35,14 @@ extern "C" {
  * @retval Other failure
  */
 int pusha_notify(pusha_http_headers* headers,
-			pusha_payload* pp,
-			EC_KEY*	key,
-			const char* endpoint,
-			const char* subscriber,
-			const char* p256dh,
-			const char* auth,
-			unsigned expiration,
-			const void* payload,
-			size_t payload_len);
+				pusha_payload* pp,
+				EC_KEY*	key,
+				const char* endpoint, size_t endpoint_len,
+				const char* subscriber, size_t subscriber_len,
+				const char* p256dh, size_t p256dh_len,
+				const char* auth, size_t auth_len,
+				unsigned expiration,
+				const void* payload, size_t payload_len);
 
 /**
  * \brief Create HTTP headers and encrypt payload
@@ -47,9 +50,13 @@ int pusha_notify(pusha_http_headers* headers,
  * @param req[out]
  * @param key[in]			EC key to encrypt/decrypt
  * @param endpoint[in]		Endpoint of user (received with subscription)
+ * @param endpoint_len[in]	Endpoint length
  * @param subscriber[in]	Contact information (a URL or a main, e.g "mailto:email@company.com")
+ * @param subscriber_len[in]	Subscriber length
  * @param p256dh[in]		Server public key (received with subscription)
+ * @param p256dh_len[in]	Server public key length
  * @param auth[in]			Authentication secret (received with subscription)
+ * @param auth_len[in]		Authentication secret length
  * @param expiration[in]	Time the push notification is still valid
  * @param ttl				Time the push request will keep at the push service
  * @param payload[in]		Payload of request (can be NULL if no payload)
@@ -60,16 +67,16 @@ int pusha_notify(pusha_http_headers* headers,
  * @retval Other failure
  */
 int pusha_notify_http(pusha_http_request* req,
-			EC_KEY*	key,
-			const char* endpoint,
-			const char* subscriber,
-			const char* p256dh,
-			const char* auth,
-			unsigned expiration,
-			unsigned ttl,
-			const void* payload,
-			size_t payload_len,
-			Pusha_HTTP_Version ver);
+				EC_KEY*	key,
+				const char* endpoint, size_t	endpoint_len,
+				const char* subscriber, size_t subscriber_len,
+				const char* p256dh, size_t p256dh_len,
+				const char* auth, size_t auth_len,
+				unsigned expiration,
+				unsigned ttl,
+				const void* payload,
+				size_t payload_len,
+				Pusha_HTTP_Version ver);
 
 #ifdef __cplusplus
 }

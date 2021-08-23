@@ -3,10 +3,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-
 #include "pusha.h"
 
 void usage(const char* program)
@@ -43,6 +39,8 @@ int main(int argc, char** argv)
 	uint32_t exp = time(NULL) + (12 * 60 * 60); //12h
 	char* sub = NULL, *p256dh = NULL, *auth = NULL,
 		*endpoint = NULL, *payload = NULL;
+	size_t sub_len, endpoint_len, p256dh_len, auth_len;
+
 
 	enum Output output = output_send;
 
@@ -62,15 +60,19 @@ int main(int argc, char** argv)
 			{
 				case 0:
 					sub = argv[i];
+					sub_len = strlen(argv[i]);
 					break;
 				case 1:
 					p256dh = argv[i];
+					p256dh_len = strlen(argv[i]);
 					break;
 				case 2:
 					auth = argv[i];
+					auth_len = strlen(argv[i]);
 					break;
 				case 3:
 					endpoint = argv[i];
+					endpoint_len = strlen(argv[i]);
 					break;
 				default:
 					PUSHA_ERROR("Invalid position argument. 4 mandatory [%d]\n", pos_arg + 1);
@@ -239,7 +241,7 @@ int main(int argc, char** argv)
 	 * To generate the vapid token, we must pass just the host from the subscription
 	 * endpoint. This function will return the exact position.
 	 */
-	size_t sep = host_path_separator(endpoint, NULL);
+	size_t sep = host_path_separator(endpoint, endpoint_len, NULL);
 	if(!sep)
 	{
 		PUSHA_ERROR("Invalid endpoint\n");
@@ -271,8 +273,8 @@ int main(int argc, char** argv)
 	 */
 
 	PUSHA_PRINT(verbose, "* Decoding subscription...\n");
-	pusha_subscription nsub = {};
-	if(!decode_subscription(&nsub, endpoint, p256dh, auth))
+	pusha_subscription nsub = {0,};
+	if(!decode_subscription(&nsub, endpoint, endpoint_len, p256dh, p256dh_len, auth, auth_len))
 	{
 		PUSHA_ERROR("*- Error decoding subscription...\n");
 		ret = 1;
@@ -281,7 +283,7 @@ int main(int argc, char** argv)
 	PUSHA_PRINT(verbose, "*+ Subscription decoded\n");
 
 	PUSHA_PRINT(verbose, "* Generating VAPID token...\n");
-	if(!generate_vapid(&token, endpoint, sep, sub, strlen(sub), exp, key))
+	if(!generate_vapid(&token, endpoint, sep, sub, sub_len, exp, key))
 	{
 		PUSHA_ERROR("*- Error generating VAPID token\n");
 		ret = 1;
@@ -329,11 +331,11 @@ int main(int argc, char** argv)
 		case output_print:
 				printf("\n");
 				PUSHA_PRINT(verbose, "* Printing HTTP request:\n");
-				print_http_request(endpoint, &headers, payload ? pp.cipher_payload : NULL, payload ? pp.cipher_payload_len : 0);
+				print_http_request(endpoint, endpoint_len, &headers, payload ? pp.cipher_payload : NULL, payload ? pp.cipher_payload_len : 0);
 			break;
 		case output_curl:
 			{
-				char* curlo = curl_output(endpoint, &headers,
+				char* curlo = curl_output(endpoint, endpoint_len, &headers,
 						payload ? pp.cipher_payload : NULL, payload ? pp.cipher_payload_len : 0);
 				if(curlo)
 				{
@@ -350,7 +352,7 @@ int main(int argc, char** argv)
 		default:
 		{
 			PUSHA_PRINT(verbose, "* Sending push request...\n");
-			send_web_push(endpoint, &headers,
+			send_web_push(endpoint, endpoint_len, &headers,
 					pp.cipher_payload_len ?
 					pp.cipher_payload : 0, pp.cipher_payload_len,
 					verbose);

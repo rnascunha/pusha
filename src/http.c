@@ -51,12 +51,16 @@ static int make_header_crypto_encoding(
 		pusha_http_headers* pheaders,
 		const char* key)
 {
-	size_t value_len = snprintf(NULL, 0, "%s;%s", pheaders->crypto_key, pheaders->crypto_key_payload);
+	size_t value_len = snprintf(NULL, 0, "%.*s;%.*s",
+			(int)pheaders->crypto_key_len, pheaders->crypto_key,
+			(int)pheaders->crypto_key_payload_len, pheaders->crypto_key_payload);
 
 	header->value = calloc(value_len + 1, 1);
 	if(!header->value) return 0;
 
-	snprintf(header->value, value_len + 1, "%s;%s", pheaders->crypto_key, pheaders->crypto_key_payload);
+	snprintf(header->value, value_len + 1, "%.*s;%.*s",
+			(int)pheaders->crypto_key_len, pheaders->crypto_key,
+			(int)pheaders->crypto_key_payload_len, pheaders->crypto_key_payload);
 	header->key = key;
 
 	return 1;
@@ -73,6 +77,7 @@ static void init_http_request(pusha_http_request* req)
 
 int make_http_request(pusha_http_request* req,
 						const char* endpoint,
+						size_t endpoint_len,
 						pusha_http_headers* headers,
 						const void* cypher_payload, size_t payload_len,
 						Pusha_HTTP_Version ver)
@@ -82,14 +87,16 @@ int make_http_request(pusha_http_request* req,
 	/**
 	 * Start line
 	 */
-	size_t size = snprintf(NULL, 0, "POST %s HTTP/%s", endpoint, ver == pusha_HTTPver_2 ? "2" : "1.1");
+	size_t size = snprintf(NULL, 0, "POST %.*s HTTP/%s",
+			(int)endpoint_len, endpoint, ver == pusha_HTTPver_2 ? "2" : "1.1");
 	req->start_line = calloc(size + 1, 1);
 	if(!req->start_line)
 	{
 		ret = 0;
 		goto end;
 	}
-	snprintf(req->start_line, size + 1, "POST %s HTTP/%s", endpoint, ver == pusha_HTTPver_2 ? "2" : "1.1");
+	snprintf(req->start_line, size + 1, "POST %.*s HTTP/%s",
+			(int)endpoint_len, endpoint, ver == pusha_HTTPver_2 ? "2" : "1.1");
 	/**
 	 * Headers
 	 */
@@ -102,7 +109,7 @@ int make_http_request(pusha_http_request* req,
 		ret = 0;
 		goto end;
 	}
-	if(!make_header(&req->headers[0], headers->authorization, strlen(headers->authorization), http_header_options[0]))
+	if(!make_header(&req->headers[0], headers->authorization, headers->authorization_len, http_header_options[0]))
 	{
 		ret = 0;
 		goto end;
@@ -128,7 +135,7 @@ int make_http_request(pusha_http_request* req,
 			goto end;
 		}
 		req->header_count++;
-		if(!make_header(&req->headers[4], headers->encryption, strlen(headers->encryption), http_header_options[4]))
+		if(!make_header(&req->headers[4], headers->encryption, headers->encryption_len, http_header_options[4]))
 		{
 			ret = 0;
 			goto end;
@@ -149,7 +156,7 @@ int make_http_request(pusha_http_request* req,
 	}
 	else
 	{
-		if(!make_header(&req->headers[3], headers->crypto_key, strlen(headers->crypto_key), http_header_options[3]))
+		if(!make_header(&req->headers[3], headers->crypto_key, headers->crypto_key_len, http_header_options[3]))
 		{
 			ret = 0;
 			goto end;
@@ -207,6 +214,7 @@ void free_http_request(pusha_http_request* req)
 }
 
 char* http_request_header_serialize(const char* endpoint,
+		size_t endpoint_len,
 		pusha_http_headers* headers,
 		const void* cypher_payload, size_t payload_len,
 		size_t* header_size)
@@ -217,63 +225,67 @@ char* http_request_header_serialize(const char* endpoint,
 
 	if(payload_len)
 	{
-		size = snprintf(NULL, 0, "POST %s HTTP/1.1\r\n"
-								"Authorization: %s\r\n"
+		size = snprintf(NULL, 0, "POST %.*s HTTP/1.1\r\n"
+								"Authorization: %.*s\r\n"
 								"Content-Length: %zu\r\n"
 								"Content-Encoding: aesgcm\r\n"
 								"Content-Type: application/octet-stream\r\n"
-								"Crypto-Key: %s;%s\r\n"
-								"Encryption: %s\r\n"
+								"Crypto-Key: %.*s;%.*s\r\n"
+								"Encryption: %.*s\r\n"
 								"TTL: %u\r\n"
 								"\r\n",
-				endpoint,
-				headers->authorization,
+				(int)endpoint_len, endpoint,
+				(int)headers->authorization_len, headers->authorization,
 				payload_len,
-				headers->crypto_key, headers->crypto_key_payload,
-				headers->encryption,
+				(int)headers->crypto_key_len, headers->crypto_key,
+				(int)headers->crypto_key_payload_len, headers->crypto_key_payload,
+				(int)headers->encryption_len, headers->encryption,
 				headers->ttl);
 		output = calloc(size + 1, 1);
 		if(!output) return NULL;
-		snprintf(output, size + 1, "POST %s HTTP/1.1\r\n"
-										"Authorization: %s\r\n"
-										"Content-Length: %zu\r\n"
-										"Content-Encoding: aesgcm\r\n"
-										"Content-Type: application/octet-stream\r\n"
-										"Crypto-Key: %s;%s\r\n"
-										"Encryption: %s\r\n"
-										"TTL: %u\r\n"
-										"\r\n",
-						endpoint,
-						headers->authorization,
-						payload_len,
-						headers->crypto_key, headers->crypto_key_payload,
-						headers->encryption,
-						headers->ttl);
+
+		snprintf(output, size + 1, "POST %.*s HTTP/1.1\r\n"
+								"Authorization: %.*s\r\n"
+								"Content-Length: %zu\r\n"
+								"Content-Encoding: aesgcm\r\n"
+								"Content-Type: application/octet-stream\r\n"
+								"Crypto-Key: %.*s;%.*s\r\n"
+								"Encryption: %.*s\r\n"
+								"TTL: %u\r\n"
+								"\r\n",
+				(int)endpoint_len, endpoint,
+				(int)headers->authorization_len, headers->authorization,
+				payload_len,
+				(int)headers->crypto_key_len, headers->crypto_key,
+				(int)headers->crypto_key_payload_len, headers->crypto_key_payload,
+				(int)headers->encryption_len, headers->encryption,
+				headers->ttl);
 	}
 	else
 	{
-		size = snprintf(NULL, 0, "POST %s HTTP/1.1\r\n"
-								"Authorization: %s\r\n"
-								"Crypto-Key: %s\r\n"
+		size = snprintf(NULL, 0, "POST %.*s HTTP/1.1\r\n"
+								"Authorization: %.*s\r\n"
+								"Crypto-Key: %.*s\r\n"
 								"TTL: %u\r\n"
 								"Content-Length: 0\r\n"
 								"\r\n",
-				endpoint,
-				headers->authorization,
-				headers->crypto_key,
+				(int)endpoint_len, endpoint,
+				(int)headers->authorization_len, headers->authorization,
+				(int)headers->crypto_key_len, headers->crypto_key,
 				headers->ttl);
 		output = calloc(size + 1, 1);
 		if(!output) return NULL;
-		snprintf(output, size + 1, "POST %s HTTP/1.1\r\n"
-									"Authorization: %s\r\n"
-									"Crypto-Key: %s\r\n"
-									"TTL: %u\r\n"
-									"Content-Length: 0\r\n"
-									"\r\n",
-						endpoint,
-						headers->authorization,
-						headers->crypto_key,
-						headers->ttl);
+
+		snprintf(output, size + 1, "POST %.*s HTTP/1.1\r\n"
+								"Authorization: %.*s\r\n"
+								"Crypto-Key: %.*s\r\n"
+								"TTL: %u\r\n"
+								"Content-Length: 0\r\n"
+								"\r\n",
+				(int)endpoint_len, endpoint,
+				(int)headers->authorization_len, headers->authorization,
+				(int)headers->crypto_key_len, headers->crypto_key,
+				headers->ttl);
 	}
 
 	if(header_size) *header_size = size;
@@ -281,12 +293,13 @@ char* http_request_header_serialize(const char* endpoint,
 }
 
 uint8_t* http_request_serialize(const char* endpoint,
+		size_t endpoint_len,
 		pusha_http_headers* headers,
 		const void* cypher_payload, size_t payload_len,
 		size_t* packet_size)
 {
 	size_t size;
-	uint8_t* request = (uint8_t*)http_request_header_serialize(endpoint, headers,
+	uint8_t* request = (uint8_t*)http_request_header_serialize(endpoint, endpoint_len, headers,
 												cypher_payload, payload_len,
 												&size);
 	if(packet_size) *packet_size = size;

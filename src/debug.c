@@ -22,24 +22,27 @@ static void print_array(const uint8_t* payload, size_t length, size_t break_line
 	}
 }
 
-void print_http_request(const char* endpoint, pusha_http_headers* headers,
+void print_http_request(const char* endpoint,
+						size_t endpoint_len,
+						pusha_http_headers* headers,
 						const uint8_t* payload, size_t payload_len)
 {
 	if(headers->crypto_key_payload)
 	{
-		printf("> POST %s HTTP/1.1\n"
-				"> Authorization: %s\n"
+		printf("> POST %.*s HTTP/1.1\n"
+				"> Authorization: %.*s\n"
 				"> Content-Length: %zu\n"
 				"> Content-Encoding: aesgcm\n"
 				"> Content-Type: application/octet-stream\n"
-				"> Crypto-Key: %s;%s\n"
-				"> Encryption: %s\n"
+				"> Crypto-Key: %.*s;%.*s\n"
+				"> Encryption: %.*s\n"
 				"> TTL: %u\n",
-				endpoint,
-				headers->authorization,
+				(int)endpoint_len, endpoint,
+				(int)headers->authorization_len, headers->authorization,
 				payload_len,
-				headers->crypto_key, headers->crypto_key_payload,
-				headers->encryption,
+				(int)headers->crypto_key_len, headers->crypto_key,
+				(int)headers->crypto_key_payload_len, headers->crypto_key_payload,
+				(int)headers->encryption_len, headers->encryption,
 				headers->ttl);
 		if(payload_len)
 		{
@@ -50,14 +53,14 @@ void print_http_request(const char* endpoint, pusha_http_headers* headers,
 	}
 	else
 	{
-		printf("> POST %s HTTP/1.1\n"
-				"> Authorization: %s\n"
-				"> Crypto-Key: %s\n"
+		printf("> POST %.*s HTTP/1.1\n"
+				"> Authorization: %.*s\n"
+				"> Crypto-Key: %.*s\n"
 				"> TTL: %u\n"
 				"> Content-Length: 0\n",
-			endpoint,
-			headers->authorization,
-			headers->crypto_key,
+			(int)endpoint_len, endpoint,
+			(int)headers->authorization_len, headers->authorization,
+			(int)headers->crypto_key_len, headers->crypto_key,
 			headers->ttl);
 	}
 }
@@ -78,6 +81,7 @@ void print_http_request2(pusha_http_request* req)
 }
 
 char* curl_output(const char* endpoint,
+		size_t endpoint_len,
 		pusha_http_headers* headers,
 		const void* cypher_payload,
 		size_t payload_len)
@@ -102,39 +106,41 @@ char* curl_output(const char* endpoint,
 			return NULL;
 		}
 
-		size = snprintf(NULL, 0, "curl -v POST -H \"Authorization: %s\" -H \"Content-Encoding: aesgcm\" -H \"Crypto-Key: "
-				 "%s;%s\" -H \"Encryption: %s\" -H \"TTL: %u\" --data-binary @%s %s",
-					 headers->authorization,
-					 headers->crypto_key,
-					 headers->crypto_key_payload,
-					 headers->encryption,
+		size = snprintf(NULL, 0, "curl -v POST -H \"Authorization: %.*s\" -H \"Content-Encoding: aesgcm\" -H \"Crypto-Key: "
+				 "%.*s;%.*s\" -H \"Encryption: %.*s\" -H \"TTL: %u\" --data-binary @%s %.*s",
+					 (int)headers->authorization_len, headers->authorization,
+					 (int)headers->crypto_key_len, headers->crypto_key,
+					 (int)headers->crypto_key_payload_len, headers->crypto_key_payload,
+					 (int)headers->encryption_len, headers->encryption,
 					 headers->ttl,
-					 filename, endpoint);
+					 filename,
+					 (int)endpoint_len, endpoint);
 		output = calloc(size + 1, 1);
 		if(!output) return NULL;
-		snprintf(output, size + 1, "curl -v POST -H \"Authorization: %s\" -H \"Content-Encoding: aesgcm\" -H \"Crypto-Key: "
-				"%s;%s\" -H \"Encryption: %s\" -H \"TTL: %u\" --data-binary @%s %s",
-					 headers->authorization,
-					 headers->crypto_key,
-					 headers->crypto_key_payload,
-					 headers->encryption,
-					 headers->ttl,
-					 filename, endpoint);
+		snprintf(output, size + 1, "curl -v POST -H \"Authorization: %.*s\" -H \"Content-Encoding: aesgcm\" -H \"Crypto-Key: "
+				"%.*s;%.*s\" -H \"Encryption: %.*s\" -H \"TTL: %u\" --data-binary @%s %.*s",
+					(int)headers->authorization_len, headers->authorization,
+					(int)headers->crypto_key_len, headers->crypto_key,
+					(int)headers->crypto_key_payload_len, headers->crypto_key_payload,
+					(int)headers->encryption_len, headers->encryption,
+					headers->ttl,
+					filename,
+					(int)endpoint_len, endpoint);
 	}
 	else
 	{
-		size = snprintf(NULL, 0, "curl -v POST -H \"Authorization: %s\" -H \"Crypto-Key: %s\" -H \"TTL: %u\" %s",
-				 headers->authorization,
-				headers->crypto_key,
-				headers->ttl,
-				endpoint);
+		size = snprintf(NULL, 0, "curl -v POST -H \"Authorization: %.*s\" -H \"Crypto-Key: %.*s\" -H \"TTL: %u\" %.*s",
+					(int)headers->authorization_len, headers->authorization,
+					(int)headers->crypto_key_len, headers->crypto_key,
+					headers->ttl,
+					(int)endpoint_len, endpoint);
 		output = calloc(size + 1, 1);
 		if(!output) return NULL;
-		snprintf(output, size + 1, "curl -v POST -H \"Authorization: %s\" -H \"Crypto-Key: %s\" -H \"TTL: %u\" %s",
-				 headers->authorization,
-				headers->crypto_key,
+		snprintf(output, size + 1, "curl -v POST -H \"Authorization: %.*s\" -H \"Crypto-Key: %.*s\" -H \"TTL: %u\" %.*s",
+				(int)headers->authorization_len, headers->authorization,
+				(int)headers->crypto_key_len, headers->crypto_key,
 				headers->ttl,
-				endpoint);
+				(int)endpoint_len, endpoint);
 	}
 
 	return output;
@@ -171,6 +177,7 @@ static int response_handler(const void* buf, size_t len, int verbose)
 }
 
 int send_web_push(const char* endpoint,
+		size_t endpoint_len,
 		pusha_http_headers* headers,
 		const void* cypher_payload, size_t payload_len,
 		int verbose)
@@ -182,7 +189,7 @@ int send_web_push(const char* endpoint,
 	 * Serializing HTTP request
 	 */
 	PUSHA_PRINT(verbose, "* Serializing request...\n");
-	uint8_t* request = http_request_serialize(endpoint, headers, cypher_payload, payload_len, &request_len);
+	uint8_t* request = http_request_serialize(endpoint, endpoint_len, headers, cypher_payload, payload_len, &request_len);
 
 	if(!request_len)
 	{
@@ -196,7 +203,7 @@ int send_web_push(const char* endpoint,
 	 * Finding host
 	 */
 	char* host;
-	size_t sep = host_path_separator(endpoint, &host);
+	size_t sep = host_path_separator(endpoint, endpoint_len, &host);
 	if(!sep)
 	{
 		PUSHA_ERROR("*- Endpoint error...\n");

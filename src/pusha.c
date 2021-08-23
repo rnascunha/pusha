@@ -4,34 +4,36 @@
 int pusha_notify(pusha_http_headers* headers,
 			pusha_payload* pp,
 			EC_KEY*	key,
-			const char* endpoint,
-			const char* subscriber,
-			const char* p256dh,
-			const char* auth,
+			const char* endpoint, size_t	endpoint_len,
+			const char* subscriber, size_t subscriber_len,
+			const char* p256dh, size_t p256dh_len,
+			const char* auth, size_t auth_len,
 			unsigned expiration,
-			const void* payload,
-			size_t payload_len)
+			const void* payload, size_t payload_len)
 {
 	if(payload_len && pp == NULL)
 	{
 		return PUSHA_ERROR_WRONG_ARGUMENTS;
 	}
 
-	size_t sep = host_path_separator(endpoint, NULL);
+	size_t sep = host_path_separator(endpoint, endpoint_len, NULL);
 	if(!sep)
 	{
 		return PUSHA_ERROR_INVALID_ENDPOINT;
 	}
 
-	pusha_subscription nsub = {};
-	if(!decode_subscription(&nsub, endpoint, p256dh, auth))
+	pusha_subscription nsub = {0,};
+	if(!decode_subscription(&nsub,
+			endpoint, endpoint_len,
+			p256dh, p256dh_len,
+			auth, auth_len))
 	{
 		return PUSHA_ERROR_DECODE_SUBSCRIPTION;
 	}
 
 	int ret = ECE_OK;
-	vapid token = {};
-	if(!generate_vapid(&token, endpoint, sep, subscriber, strlen(subscriber), expiration, key))
+	vapid token = {0,};
+	if(!generate_vapid(&token, endpoint, sep, subscriber, subscriber_len, expiration, key))
 	{
 		return PUSHA_ERROR_GENERATE_VAPID;
 	}
@@ -58,37 +60,36 @@ end:
 
 int pusha_notify_http(pusha_http_request* req,
 			EC_KEY*	key,
-			const char* endpoint,
-			const char* subscriber,
-			const char* p256dh,
-			const char* auth,
+			const char* endpoint, size_t	endpoint_len,
+			const char* subscriber, size_t subscriber_len,
+			const char* p256dh, size_t p256dh_len,
+			const char* auth, size_t auth_len,
 			unsigned expiration,
 			unsigned ttl,
 			const void* payload,
 			size_t payload_len,
 			Pusha_HTTP_Version ver)
 {
-	pusha_payload pp = {};
-	pusha_http_headers headers = {};
+	pusha_payload pp = {0,};
+	pusha_http_headers headers = {0,};
 	headers.ttl = ttl;
 
 	int err = pusha_notify(&headers,
 			&pp,
 			key,
-			endpoint,
-			subscriber,
-			p256dh,
-			auth,
+			endpoint, endpoint_len,
+			subscriber, subscriber_len,
+			p256dh, p256dh_len,
+			auth, auth_len,
 			expiration,
-			payload,
-			payload_len);
+			payload, payload_len);
 
 	if(err != ECE_OK)
 	{
 		goto end;
 	}
 
-	if(!make_http_request(req, endpoint, &headers, pp.cipher_payload, pp.cipher_payload_len, ver))
+	if(!make_http_request(req, endpoint, endpoint_len, &headers, pp.cipher_payload, pp.cipher_payload_len, ver))
 	{
 		err = PUSHA_ERROR_MAKE_HTTP_REQUEST;
 	}
