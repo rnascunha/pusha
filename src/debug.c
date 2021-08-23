@@ -22,7 +22,7 @@ static void print_array(const uint8_t* payload, size_t length, size_t break_line
 	}
 }
 
-void print_http_request(const char* endpoint, push_http_headers* headers,
+void print_http_request(const char* endpoint, pusha_http_headers* headers,
 						const uint8_t* payload, size_t payload_len)
 {
 	if(headers->crypto_key_payload)
@@ -62,7 +62,7 @@ void print_http_request(const char* endpoint, push_http_headers* headers,
 	}
 }
 
-void print_http_request2(http_request* req)
+void print_http_request2(pusha_http_request* req)
 {
 	printf("> %s\n", req->start_line);
 	for(size_t i = 0; i < req->header_count; i++)
@@ -78,7 +78,7 @@ void print_http_request2(http_request* req)
 }
 
 char* curl_output(const char* endpoint,
-		push_http_headers* headers,
+		pusha_http_headers* headers,
 		const void* cypher_payload,
 		size_t payload_len)
 {
@@ -144,7 +144,6 @@ static int response_handler(const void* buf, size_t len, int verbose)
 {
 	int ret = 0;
 	PUSHA_PRINT(verbose, "*+ Received %zu bytes\n", len);
-//	printf(">>%.*s\n", (int)len, (const char*)buf);
 	char *res = strstr(buf, "HTTP/1.1 ");
 	if(res)
 	{
@@ -172,7 +171,7 @@ static int response_handler(const void* buf, size_t len, int verbose)
 }
 
 int send_web_push(const char* endpoint,
-		push_http_headers* headers,
+		pusha_http_headers* headers,
 		const void* cypher_payload, size_t payload_len,
 		int verbose)
 {

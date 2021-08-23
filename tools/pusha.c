@@ -14,11 +14,11 @@ void usage(const char* program)
 	printf("Usage:\n\t%s -h|(-p <pem_priv_file>|-b <base64_priv_key>) [-v]\n\t\t[-m <message>] "
 						"[-e <expire_time_seconds>]\n\t\t"
 						"[-o send|curl|print] [-l <ttl>]\n\t\t"
-						"<sub> <p256dh> <auth> <endpoint>\n", program);
+						"<subscriber> <p256dh> <auth> <endpoint>\n", program);
 	printf("\nWhere:\n");
-	printf("\t<sub>\tvapid subscriber (e.g. mainto:email@company.com)\n");
+	printf("\t<subscriber>\tvapid subscriber (e.g. mainto:email@company.com)\n");
 	printf("\t<p256dh>\tpublic server key (received at push subscription)\n");
-	printf("\t<auth>\tauthentication secret (received at push subscription)\n");
+	printf("\t<auth>\t\tauthentication secret (received at push subscription)\n");
 	printf("\t<endpoint>\tendpoint (received at push subscription)\n");
 	printf("\t-v\tverbose mode\n");
 	printf("\t-h\tthis help message\n");
@@ -47,8 +47,8 @@ int main(int argc, char** argv)
 	enum Output output = output_send;
 
 	vapid token = {0,};
-	push_payload pp = {0,}; ///* Used only if payload != NULL
-	push_http_headers headers = {0,};
+	pusha_payload pp = {0,}; ///* Used only if payload != NULL
+	pusha_http_headers headers = {0,};
 
 	int i = 1, pos_arg = 0;
 	argc--;
@@ -271,7 +271,7 @@ int main(int argc, char** argv)
 	 */
 
 	PUSHA_PRINT(verbose, "* Decoding subscription...\n");
-	push_subscription nsub = {};
+	pusha_subscription nsub = {};
 	if(!decode_subscription(&nsub, endpoint, p256dh, auth))
 	{
 		PUSHA_ERROR("*- Error decoding subscription...\n");
@@ -293,7 +293,7 @@ int main(int argc, char** argv)
 	{
 		PUSHA_PRINT(verbose, "* Push request with payload\n");
 		PUSHA_PRINT(verbose, "* Encoding push payload...\n");
-		int err = make_push_payload(&pp, &nsub, payload, strlen(payload), 0);
+		int err = make_pusha_payload(&pp, &nsub, payload, strlen(payload), 0);
 		if(err != ECE_OK)
 		{
 			PUSHA_ERROR("*- Error set push payload...[%d]\n", err);
@@ -302,7 +302,7 @@ int main(int argc, char** argv)
 		}
 		PUSHA_PRINT(verbose, "*+ Push payload encoded success...\n");
 		PUSHA_PRINT(verbose, "* Making HTTP headers...\n");
-		if(make_push_http_headers(&headers, &token, &pp) != ECE_OK)
+		if(make_pusha_http_headers(&headers, &token, &pp) != ECE_OK)
 		{
 			PUSHA_ERROR("*- Error making HTTP headers...\n");
 			ret = 1;
@@ -314,7 +314,7 @@ int main(int argc, char** argv)
 	{
 		PUSHA_PRINT(verbose, "* Push request WITHOUT payload\n");
 		PUSHA_PRINT(verbose, "* Making HTTP headers...\n");
-		if(make_push_http_headers(&headers, &token, NULL) != ECE_OK)
+		if(make_pusha_http_headers(&headers, &token, NULL) != ECE_OK)
 		{
 			PUSHA_ERROR("*- Error making HTTP headers...\n");
 			ret = 1;
@@ -358,9 +358,9 @@ int main(int argc, char** argv)
 			break;
 	}
 end:
-	free_push_payload(&pp);
+	free_pusha_payload(&pp);
 	free_vapid(&token);
 	EC_KEY_free(key);
-	free_push_http_headers(&headers);
+	free_pusha_http_headers(&headers);
 	return ret;
 }

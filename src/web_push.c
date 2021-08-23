@@ -7,7 +7,7 @@
 #include "pusha/web_push.h"
 #include "pusha/vapid.h"
 
-bool decode_subscription(push_subscription* sub,
+bool decode_subscription(pusha_subscription* sub,
 						const char* endpoint,
 						const char* p256dh_base64,
 						const char* auth_base64)
@@ -27,8 +27,8 @@ bool decode_subscription(push_subscription* sub,
 	return true;
 }
 
-bool encode_subscription(push_subscription_base64* sub_b64,
-							push_subscription* sub)
+bool encode_subscription(pusha_subscription_base64* sub_b64,
+							pusha_subscription* sub)
 {
 	bool ret = true;
 
@@ -60,21 +60,21 @@ bool encode_subscription(push_subscription_base64* sub_b64,
 
 end:
 	if(!ret)
-		free_push_subscription_base64(sub_b64);
+		free_pusha_subscription_base64(sub_b64);
 
 	return ret;
 }
 
-void free_push_subscription_base64(push_subscription_base64* sub_b64)
+void free_pusha_subscription_base64(pusha_subscription_base64* sub_b64)
 {
 	free(sub_b64->p256dh);
 	free(sub_b64->auth);
 
-	memset(sub_b64, 0, sizeof(push_subscription_base64));
+	memset(sub_b64, 0, sizeof(pusha_subscription_base64));
 }
 
-int make_push_payload(push_payload* pp,
-						push_subscription* sub,
+int make_pusha_payload(pusha_payload* pp,
+						pusha_subscription* sub,
 						const void* payload, size_t payload_len,
 						size_t pad_len)
 {
@@ -97,17 +97,17 @@ int make_push_payload(push_payload* pp,
 	return err;
 }
 
-void free_push_payload(push_payload* payload)
+void free_pusha_payload(pusha_payload* payload)
 {
 	if(payload->cipher_payload_len)
 		free(payload->cipher_payload);
 
-	memset(payload, 0, sizeof(push_payload));
+	memset(payload, 0, sizeof(pusha_payload));
 }
 
 static int
-make_encrypt_header(push_http_headers* headers,
-					push_payload* pp)
+make_encrypt_header(pusha_http_headers* headers,
+					pusha_payload* pp)
 {
 	size_t cryptoKeyHeaderLen = 0;
 	size_t encryptionHeaderLen = 0;
@@ -158,9 +158,9 @@ end:
 	return err;
 }
 
-int make_push_http_headers(push_http_headers* headers,
+int make_pusha_http_headers(pusha_http_headers* headers,
 					vapid* token,
-					push_payload* pp)
+					pusha_payload* pp)
 {
 	int ret = ECE_OK;
 	size_t size;
@@ -203,13 +203,13 @@ end:
 	return ret;
 }
 
-void free_push_http_headers(push_http_headers* headers)
+void free_pusha_http_headers(pusha_http_headers* headers)
 {
 	free(headers->authorization);
 	free(headers->crypto_key);
 	free(headers->crypto_key_payload);
 	free(headers->encryption);
 
-	memset(headers, 0, sizeof(push_http_headers));
+	memset(headers, 0, sizeof(pusha_http_headers));
 }
 

@@ -31,8 +31,11 @@ if(DEFINED WITH_TOOLS)
 		add_executable(genkey ${TOOLS_DIR}/genkey.c)
 		target_link_libraries(genkey PUBLIC ${PROJECT_NAME})
 		
-		add_executable(push ${TOOLS_DIR}/push.c)
-		target_link_libraries(push PUBLIC ${PROJECT_NAME})
+		add_executable(${PROJECT_NAME}-bin ${TOOLS_DIR}/pusha.c)
+		target_link_libraries(${PROJECT_NAME}-bin PUBLIC ${PROJECT_NAME})
+		# Setting name
+		set_target_properties(${PROJECT_NAME}-bin
+        	PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
 	endif()
 endif()
 

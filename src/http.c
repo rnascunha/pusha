@@ -18,7 +18,7 @@ static const char* http_header_options[] = {
 static const char* http_content_type = "application/octet-stream";
 static const char* http_content_encoding = "aesgcm";
 
-static int make_header(http_header* header,
+static int make_header(pusha_http_header* header,
 					const char* value, size_t value_len,
 					const char* key)
 {
@@ -32,7 +32,7 @@ static int make_header(http_header* header,
 	return 1;
 }
 
-static int make_header_unsigned(http_header* header,
+static int make_header_unsigned(pusha_http_header* header,
 					unsigned value,
 					const char* key)
 {
@@ -47,8 +47,8 @@ static int make_header_unsigned(http_header* header,
 }
 
 static int make_header_crypto_encoding(
-		http_header* header,
-		push_http_headers* pheaders,
+		pusha_http_header* header,
+		pusha_http_headers* pheaders,
 		const char* key)
 {
 	size_t value_len = snprintf(NULL, 0, "%s;%s", pheaders->crypto_key, pheaders->crypto_key_payload);
@@ -62,7 +62,7 @@ static int make_header_crypto_encoding(
 	return 1;
 }
 
-static void init_http_request(http_request* req)
+static void init_http_request(pusha_http_request* req)
 {
 	req->start_line = NULL;
 	req->headers = NULL;
@@ -71,31 +71,31 @@ static void init_http_request(http_request* req)
 	req->body_len = 0;
 }
 
-int make_http_request(http_request* req,
+int make_http_request(pusha_http_request* req,
 						const char* endpoint,
-						push_http_headers* headers,
+						pusha_http_headers* headers,
 						const void* cypher_payload, size_t payload_len,
-						HTTP_Version ver)
+						Pusha_HTTP_Version ver)
 {
 	init_http_request(req);
 	int ret = 1;
 	/**
 	 * Start line
 	 */
-	size_t size = snprintf(NULL, 0, "POST %s HTTP/%s", endpoint, ver == HTTPver_2 ? "2" : "1.1");
+	size_t size = snprintf(NULL, 0, "POST %s HTTP/%s", endpoint, ver == pusha_HTTPver_2 ? "2" : "1.1");
 	req->start_line = calloc(size + 1, 1);
 	if(!req->start_line)
 	{
 		ret = 0;
 		goto end;
 	}
-	snprintf(req->start_line, size + 1, "POST %s HTTP/%s", endpoint, ver == HTTPver_2 ? "2" : "1.1");
+	snprintf(req->start_line, size + 1, "POST %s HTTP/%s", endpoint, ver == pusha_HTTPver_2 ? "2" : "1.1");
 	/**
 	 * Headers
 	 */
 	req->headers = calloc(payload_len ?
 						HEADERS_COUNT_WITH_PAYLOAD :
-						HEADERS_COUNT_WITHOUT_PAYLOAD, sizeof(http_header));
+						HEADERS_COUNT_WITHOUT_PAYLOAD, sizeof(pusha_http_header));
 
 	if(!req->headers)
 	{
@@ -182,14 +182,14 @@ end:
 	return ret;
 }
 
-void free_http_header(http_header* header)
+void free_http_header(pusha_http_header* header)
 {
 	header->key = NULL;
 	free(header->value);
 }
 
 
-void free_http_request(http_request* req)
+void free_http_request(pusha_http_request* req)
 {
 	free(req->start_line);
 	if(req->body_len)
@@ -207,7 +207,7 @@ void free_http_request(http_request* req)
 }
 
 char* http_request_header_serialize(const char* endpoint,
-		push_http_headers* headers,
+		pusha_http_headers* headers,
 		const void* cypher_payload, size_t payload_len,
 		size_t* header_size)
 {
@@ -281,7 +281,7 @@ char* http_request_header_serialize(const char* endpoint,
 }
 
 uint8_t* http_request_serialize(const char* endpoint,
-		push_http_headers* headers,
+		pusha_http_headers* headers,
 		const void* cypher_payload, size_t payload_len,
 		size_t* packet_size)
 {
@@ -310,7 +310,7 @@ uint8_t* http_request_serialize(const char* endpoint,
 	return request;
 }
 
-uint8_t* http_request_serialize2(http_request* req, size_t* packet_size)
+uint8_t* http_request_serialize2(pusha_http_request* req, size_t* packet_size)
 {
 	size_t size = 0;
 	if(packet_size) *packet_size = 0;

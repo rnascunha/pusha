@@ -97,11 +97,11 @@ int main()
 	 * with the push message (payload != NULL). It will hold the encrypted
 	 * payload and some other info needed
 	 */
-	push_payload pp = {};
+	pusha_payload pp = {};
 	/**
 	 * This will hold the HTTP headers processed
 	 */
-	push_http_headers headers = {};
+	pusha_http_headers headers = {};
 	headers.ttl = ttl;
 
 	int err = pusha_notify(&headers,
@@ -143,8 +143,8 @@ end:
 	/**
 	 * Freeing any memory allocated
 	 */
-	free_push_payload(&pp);
-	free_push_http_headers(&headers);
+	free_pusha_payload(&pp);
+	free_pusha_http_headers(&headers);
 
 	return err;
 }

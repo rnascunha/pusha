@@ -1,14 +1,14 @@
 # Pusha
 
-**Pusha** is a C implementation to make **Web Push** requests. The library aims to provide a easy interface that supplying all the necessary information, it will deal with all the complexity. As a result, it delivers the HTTP headers and payload encryptation necessary to make the HTTP request.
+**Pusha** is a library implemented in C to make **Web Push** requests. The library aims to provide a easy interface that, supplying all the necessary information, will deal with all the complexity, delivering the HTTP headers and payload encryptation necessary to make the HTTP request. It also provides some HTTP facilities as serialize data to send.
 
-It's also avaiable 2 tools to assist:
-* [genkey](#genkey) will generate a pair of *private*/*public* keys needed to send the push requests;
-* [push](#push) is a tool to send the push requests via command line.
+**Pusha** brings 2 tools to assist:
+* [genkey](#genkey) will generate a pair of *private*/*public* keys needed to send web push requests;
+* [pusha](#pusha-tool) is a tool to send web push requests via command line.
 
 ## Decendencies
 
-**Pusha** depends of:
+It depends of:
 
 * [CMake](https://cmake.org/) - to build **Pusha**;
 * [OpenSSL](https://www.openssl.org/);
@@ -41,16 +41,16 @@ $ cmake -DWITH_TOOLS=1 -DWITH_EXAMPLES=1 ..
 ```
 ## Tools
 
-> Build **pusha** with -DWITH_TOOLS=1 to compile the tools.
+> Build **pusha** with *-DWITH_TOOLS=1* to compile the tools.
 
 ### genkey
 
-This tool will create a pair of *private*/*public* key that is needed to make push requests. It prints the keys in base64 encoded, and also export in PEM format.
+This tool will create a pair of *private*/*public* key that is needed to make push requests. It prints the keys in base64 encoded, and also export to file in a PEM format.
 
 ```bash
 $ ./genkey -h
 Usage:
-	./genkey -h|[-p private_pem_file] [-u public_pem_file]
+	./genkey -h|[-p <private_pem_file>] [-u <public_pem_file>]
 Where:
 	-h	print this help message
 	-p	output private key to pem file specified
@@ -64,36 +64,36 @@ Private: 3zDn2khtNBpZCAUjwBepiaVy3u6bbVKZwlFP3d3nUbo
 Public: BKE67tSj-yFp3ZsRruJnEwiGxj8KMUkC_5gk_tjRtoVDBHBhvpPX8DgOSVZXkey2AM1pk1vzEd7hlk_-KOqV_Yw
 ```
 This command will also create a *priv.pem* with the private key.
-### push
+### pusha tool
 
-This will allows you to send push notification at command line.
+This tool allows to send push notification at command line.
 
 ```bash
-$ ./push -h
+$ ./pusha -h
 Usage:
-	./push -h|(-p <pem_priv_file>|-b <base64_priv_key>) [-v]
+	./pusha -h|(-p <pem_priv_file>|-b <base64_priv_key>) [-v]
 		[-m <message>] [-e <expire_time_seconds>]
 		[-o send|curl|print] [-l <ttl>]
-		<sub> <p256dh> <auth> <endpoint>
+		<subscriber> <p256dh> <auth> <endpoint>
 
 Where:
-	<sub>	vapid subscriber (e.g. mainto:email@company.com)
+	<subscriber>	vapid subscriber (e.g. mainto:email@company.com)
 	<p256dh>	public server key (received at push subscription)
-	<auth>	authentication secret (received at push subscription)
+	<auth>		authentication secret (received at push subscription)
 	<endpoint>	endpoint (received at push subscription)
 	-v	verbose mode
 	-h	this help message
 	-p	pem file with EC private key (don't use with '-b')
 	-b	base64 encoded private key (don't use with '-p')
-	-e	seconds to expire time (default 12h, i.e 12 * 60 * 60)
+	-e	seconds to expire time (default 12h, i.e, 12 * 60 * 60)
 	-o	set output type. Options: 'send' (default), 'curl' or 'print'
 	-l	set http ttl value (default = 0)
 	-m	message payload to send
 ```
 Five arguments are mandatory:
 * *-p <pem_priv_file>*|*-b <base64_priv_key>*: the private key (can be generate with the [genkey](#genkey) tool above);
-* *sub* (subscriber): a information of contact. A URL or a email (e.g *mailto:email@company.com*);
-* *p256dh*, *auth* and *endpoint*: this information is received when the user allows to receive a push notification. Your application is responsible to keep this information for each user. When the user subscribe, it will present to you a information in a JSON format, like this:
+* *subscriber*: a information of contact. A URL or a email, e.g *mailto:email@company.com*;
+* *p256dh*, *auth* and *endpoint*: this information is received when the user allows to receive a push notification. Your application is responsible to keep this information for each user. When the user subscribes, it will present the information in a JSON format, like this:
 
 ```JSON
 {
@@ -144,16 +144,16 @@ $ ./push -v -p priv.pem maito:email@company.com BMkGGRuBBhQf8H2s_I2Xz2487IaKqmP9
 *+ Web push request sent successfully
 > HTTP response: 201 Created
 ```
-Output with verbose mode on (-v).
+Output with verbose mode ON (-v).
 
-> The **push** tool is a good source to learn how to use the **pusha** library. It construct the push request step by step using some "internal" structures, learning how to manipulate the library.
+> The **pusha** tool is a good source to learn how to use the **pusha** library. It construct the push request step by step using some "internal" structures, learning how to manipulate the library.
 ## Examples
 
 > Build **pusha** with -DWITH_EXAMPLES=1 to compile the examples.
 
-There is two examples that shows how to use the **Pusha** library. The examples will print the information as a HTTP request should be. Both examples begin importing the *private* key from a PEM file. The only diference is the interface used:
-* *web_push*: call the **pusha_notify** function, that populates the *push_http_headers* and *push_payload* (if any payload is present);
-* *web_push_http*: call the **pusha_notify_http** function, that populates the *http_header*;
+There are two examples that shows how to use the **Pusha** library. The examples will print the information as a HTTP request should be. Both examples begin importing the *private* key from a PEM file. The only diference is the interface used:
+* *web_push*: call the **pusha_notify** function, that populates the *pusha_http_headers* and *pusha_payload* (if any payload is present);
+* *web_push_http*: call the **pusha_notify_http** function, that populates the *pusha_http_header*;
 
 The examples are equivalent, it only changes the structure that holds the values. The description of the function/structures can be checked at *pusha.h*, *pusha/web_push.h* and *pusha/http.h*.
 

@@ -63,7 +63,7 @@ int output_pem_file(EC_KEY* key, const char* private_file, const char* public_fi
 
 static void usage(const char* program)
 {
-	printf("Usage:\n\t%s -h|[-p private_pem_file] [-u public_pem_file]\n", program);
+	printf("Usage:\n\t%s -h|[-p <private_pem_file>] [-u <public_pem_file>]\n", program);
 	printf("Where:\n");
 	printf("\t-h\tprint this help message\n");
 	printf("\t-p\toutput private key to pem file specified\n");

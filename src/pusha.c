@@ -1,8 +1,8 @@
 #include "pusha.h"
 #include <string.h>
 
-int pusha_notify(push_http_headers* headers,
-			push_payload* pp,
+int pusha_notify(pusha_http_headers* headers,
+			pusha_payload* pp,
 			EC_KEY*	key,
 			const char* endpoint,
 			const char* subscriber,
@@ -23,7 +23,7 @@ int pusha_notify(push_http_headers* headers,
 		return PUSHA_ERROR_INVALID_ENDPOINT;
 	}
 
-	push_subscription nsub = {};
+	pusha_subscription nsub = {};
 	if(!decode_subscription(&nsub, endpoint, p256dh, auth))
 	{
 		return PUSHA_ERROR_DECODE_SUBSCRIPTION;
@@ -38,14 +38,14 @@ int pusha_notify(push_http_headers* headers,
 
 	if(payload_len)
 	{
-		if(make_push_payload(pp, &nsub, payload, payload_len, 0) != ECE_OK)
+		if(make_pusha_payload(pp, &nsub, payload, payload_len, 0) != ECE_OK)
 		{
 			ret = PUSHA_ERROR_MAKE_PAYLOAD;
 			goto end;
 		}
 	}
 
-	if(make_push_http_headers(headers, &token, payload_len ? pp : NULL) != ECE_OK)
+	if(make_pusha_http_headers(headers, &token, payload_len ? pp : NULL) != ECE_OK)
 	{
 		ret = PUSHA_ERROR_MAKE_HTTP_HEADERS;
 		goto end;
@@ -56,7 +56,7 @@ end:
 	return ret;
 }
 
-int pusha_notify_http(http_request* req,
+int pusha_notify_http(pusha_http_request* req,
 			EC_KEY*	key,
 			const char* endpoint,
 			const char* subscriber,
@@ -66,10 +66,10 @@ int pusha_notify_http(http_request* req,
 			unsigned ttl,
 			const void* payload,
 			size_t payload_len,
-			HTTP_Version ver)
+			Pusha_HTTP_Version ver)
 {
-	push_payload pp = {};
-	push_http_headers headers = {};
+	pusha_payload pp = {};
+	pusha_http_headers headers = {};
 	headers.ttl = ttl;
 
 	int err = pusha_notify(&headers,
@@ -93,8 +93,8 @@ int pusha_notify_http(http_request* req,
 		err = PUSHA_ERROR_MAKE_HTTP_REQUEST;
 	}
 end:
-	free_push_payload(&pp);
-	free_push_http_headers(&headers);
+	free_pusha_payload(&pp);
+	free_pusha_http_headers(&headers);
 
 	return err;
 }

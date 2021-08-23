@@ -30,8 +30,8 @@ extern "C" {
  * @retval 0 success
  * @retval Other failure
  */
-int pusha_notify(push_http_headers* headers,
-			push_payload* pp,
+int pusha_notify(pusha_http_headers* headers,
+			pusha_payload* pp,
 			EC_KEY*	key,
 			const char* endpoint,
 			const char* subscriber,
@@ -59,7 +59,7 @@ int pusha_notify(push_http_headers* headers,
  * @retval 0 success
  * @retval Other failure
  */
-int pusha_notify_http(http_request* req,
+int pusha_notify_http(pusha_http_request* req,
 			EC_KEY*	key,
 			const char* endpoint,
 			const char* subscriber,
@@ -69,7 +69,7 @@ int pusha_notify_http(http_request* req,
 			unsigned ttl,
 			const void* payload,
 			size_t payload_len,
-			HTTP_Version ver);
+			Pusha_HTTP_Version ver);
 
 #ifdef __cplusplus
 }

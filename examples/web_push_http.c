@@ -88,7 +88,7 @@ int main()
 	/**
 	 * Now we can make our push request
 	 */
-	http_request req;
+	pusha_http_request req;
 
 	int err = pusha_notify_http(&req,
 			key,

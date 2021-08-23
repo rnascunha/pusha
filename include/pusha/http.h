@@ -10,9 +10,9 @@ extern "C" {
 #endif /* __cplusplus */
 
 typedef enum{
-	HTTPver_1_1 = 0,
-	HTTPver_2
-}HTTP_Version;
+	pusha_HTTPver_1_1 = 0,
+	pusha_HTTPver_2
+}Pusha_HTTP_Version;
 
 /**
  * Holds a HTTP header
@@ -20,39 +20,39 @@ typedef enum{
 typedef struct{
 	const char*	key;		///< Header option
 	char* 		value;		///< Option value
-}http_header;
+}pusha_http_header;
 
 /**
  * Holds all the headers necessary to make a push request.
  */
 typedef struct{
 	char* 			start_line;		///< First line of the HTTP request
-	http_header* 	headers;		///< Array of headers
+	pusha_http_header* 	headers;		///< Array of headers
 	size_t			header_count;	///< Number of headers (size of the array abose)
 	void*			body;			///< Encrypted body
 	size_t			body_len;		///< Size of encrypted body
-}http_request;
+}pusha_http_request;
 
-int make_http_request(http_request*,
+int make_http_request(pusha_http_request*,
 					const char* endpoint,
-					push_http_headers*,
+					pusha_http_headers*,
 					const void* cypher_payload, size_t payload_len,
-					HTTP_Version ver);
+					Pusha_HTTP_Version ver);
 
-void free_http_header(http_header*);
-void free_http_request(http_request*);
+void free_http_header(pusha_http_header*);
+void free_http_request(pusha_http_request*);
 
 char* http_request_header_serialize(const char* endpoint,
-		push_http_headers*,
+		pusha_http_headers*,
 		const void* cypher_payload, size_t payload_len,
 		size_t* header_size);
 
 uint8_t* http_request_serialize(const char* endpoint,
-		push_http_headers*,
+		pusha_http_headers*,
 		const void* cypher_payload, size_t payload_len,
 		size_t* packet_size);
 
-uint8_t* http_request_serialize2(http_request*, size_t* packet_size);
+uint8_t* http_request_serialize2(pusha_http_request*, size_t* packet_size);
 
 #ifdef __cplusplus
 }
