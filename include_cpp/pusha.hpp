@@ -1,6 +1,7 @@
 #ifndef PUSHA_MAIN_HPP__
 #define PUSHA_MAIN_HPP__
 
+#include "pusha.h"
 #include "pusha/ec_keys.hpp"
 #include "pusha/notify.hpp"
 

@@ -2,9 +2,10 @@
 
 **Pusha** is a library implemented in C/C++ to make **Web Push** requests. The library aims to provide a easy interface that, supplying the necessary information, will deal with all the complexity, delivering the HTTP headers and payload encryptation needed to make the HTTP request. It also provides some HTTP facilities as serialize data to send.
 
-**Pusha** brings 2 tools to assist:
+**Pusha** brings 3 tools to assist:
 * [genkey](#genkey) will generate a pair of *private*/*public* keys needed to send web push requests;
-* [pusha](#pusha-tool) is a tool to send web push requests via command line.
+* [pusha](#pusha-tool) is a tool to send web push requests via command line;
+* [export_key](#export_key) export a public key of a private key given as input.
 
 ## Decendencies
 
@@ -147,6 +148,25 @@ $ ./push -v -p priv.pem maito:email@company.com BMkGGRuBBhQf8H2s_I2Xz2487IaKqmP9
 Output with verbose mode ON (-v).
 
 > The **pusha** tool is a good source to learn how to use the **pusha** library. It construct the push request step by step using some "internal" structures, learning how to manipulate the library.
+
+###export_key
+
+This tool will export a public key in base64url encoded, and/or PEM file. The input private key can also be a PEM file format, or base64url.
+
+```bash
+./export_key -h
+Usage:
+	./export_key -h|<priv_key_pem_file|base64url_priv_key> [<export_pem_file>]
+Where:
+	-h	This help message.
+	<priv_key_pem_file>
+		PEM file with private key to be exported.
+	<base64url_priv_key>
+		Base64url encoded privated key to be exported.
+	<export_pem_file>
+		If provided, export public key to file name.
+```
+
 ## Examples
 
 > :warning: Build **pusha** with -DWITH_EXAMPLES=1 to compile the examples.

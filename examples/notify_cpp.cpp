@@ -24,7 +24,6 @@
 #include <stdio.h>	//fprintf
 #include <filesystem>
 #include "pusha.hpp"
-#include "pusha.h"	//pusha_http_request, pusha_http_headers, pusha_payload
 
 /**
  * Uncomment this define to make a push request without payload

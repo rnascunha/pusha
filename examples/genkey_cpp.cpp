@@ -1,7 +1,5 @@
 #include <cstdio>
 #include "pusha/ec_keys.hpp"
-#include "ece.h"
-#include <openssl/ec.h>
 #include <cstring>
 
 int output_base64(pusha::key const& key, std::string_view& privatek, std::string_view& publick) noexcept
