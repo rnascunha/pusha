@@ -5,6 +5,17 @@ project(pusha)
 
 add_subdirectory(third/ecec)
 
+if(MSVC)
+	message(STATUS "MSVC build")
+	set(CMAKE_CXX_FLAGS "/W4 /std:c++17 /EHsc")
+	set(CMAKE_CXX_FLAGS_RELEASE "/O2")
+else()
+	message(STATUS "NO MSVC build")
+	set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-unused-parameter -std=c++17")	#-fmax-errors=5 
+	set(CMAKE_CXX_FLAGS_DEBUG "-g")
+	set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+endif()
+
 set(SRC_DIR	src)
 set(SRCS	${SRC_DIR}/vapid.c
 			${SRC_DIR}/web_push.c
@@ -12,14 +23,18 @@ set(SRCS	${SRC_DIR}/vapid.c
 			${SRC_DIR}/http.c
 			${SRC_DIR}/debug.c
 			${SRC_DIR}/helper.c
-			${SRC_DIR}/pusha.c
-			)
+			${SRC_DIR}/pusha.c)
+			
+set(SRC_CPP_DIR	src_cpp)
+set(SRCS_CPP	${SRC_CPP_DIR}/error.cpp
+				${SRC_CPP_DIR}/ec_keys.cpp
+				${SRC_CPP_DIR}/notify.cpp)
 
-add_library(${PROJECT_NAME} ${SRCS})
+add_library(${PROJECT_NAME} ${SRCS} ${SRCS_CPP})
 target_include_directories(${PROJECT_NAME}
-  PUBLIC third/ecec/include
-  PUBLIC include
-)
+	PUBLIC third/ecec/include
+  	PUBLIC include
+	PUBLIC include_cpp)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC ece)
 #
@@ -51,5 +66,11 @@ if(DEFINED WITH_EXAMPLES)
 		
 		add_executable(web_push_http_example ${EXAMPLES_DIR}/web_push_http.c)
 		target_link_libraries(web_push_http_example PUBLIC ${PROJECT_NAME})
+		
+		add_executable(genkey_cpp ${EXAMPLES_DIR}/genkey_cpp.cpp)
+		target_link_libraries(genkey_cpp PUBLIC ${PROJECT_NAME})
+			
+		add_executable(notify_cpp ${EXAMPLES_DIR}/notify_cpp.cpp)
+		target_link_libraries(notify_cpp PUBLIC ${PROJECT_NAME})
 	endif()
 endif()

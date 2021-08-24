@@ -101,6 +101,7 @@ char* export_private_key(EC_KEY const* key)
 	{
 		return NULL;
 	}
+
 	size_t b64PrivKeyLen =
 	ece_base64url_encode(rawPrivKey, ECE_WEBPUSH_PRIVATE_KEY_LENGTH,
 						 ECE_BASE64URL_OMIT_PADDING, NULL, 0);

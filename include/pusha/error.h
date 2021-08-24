@@ -1,5 +1,5 @@
-#ifndef PUSHA_ERROR_HPP__
-#define PUSHA_ERROR_HPP__
+#ifndef PUSHA_ERROR_H__
+#define PUSHA_ERROR_H__
 
 #include "ece.h"
 
@@ -22,4 +22,4 @@
 #define PUSHA_ERROR_SSL_SEND			(ERROR_INIT_NUMBER - 16)
 #define PUSHA_ERROR_SSL_RECEIVE			(ERROR_INIT_NUMBER - 17)
 
-#endif /* PUSHA_ERROR_HPP__ */
+#endif /* PUSHA_ERROR_H__ */

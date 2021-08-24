@@ -1,5 +1,5 @@
-#ifndef PUSHA_HTTP_HPP__
-#define PUSHA_HTTP_HPP__
+#ifndef PUSHA_HTTP_H__
+#define PUSHA_HTTP_H__
 
 #include "web_push.h"
 #include <stdlib.h> //size_t
@@ -61,4 +61,4 @@ uint8_t* http_request_serialize2(pusha_http_request*, size_t* packet_size);
 }
 #endif /* __cplusplus */
 
-#endif /* PUSHA_HTTP_HPP__ */
+#endif /* PUSHA_HTTP_H__ */

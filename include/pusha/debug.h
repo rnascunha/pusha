@@ -1,5 +1,5 @@
-#ifndef PUSHA_DEBUG_HPP__
-#define PUSHA_DEBUG_HPP__
+#ifndef PUSHA_DEBUG_H__
+#define PUSHA_DEBUG_H__
 
 #include "web_push.h"
 #include "http.h"
@@ -33,4 +33,4 @@ int send_web_push(const char* endpoint,
 }
 #endif /* __cplusplus */
 
-#endif /* PUSHA_DEBUG_HPP__ */
+#endif /* PUSHA_DEBUG_H__ */

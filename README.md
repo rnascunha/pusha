@@ -1,6 +1,6 @@
 # Pusha
 
-**Pusha** is a library implemented in C to make **Web Push** requests. The library aims to provide a easy interface that, supplying all the necessary information, will deal with all the complexity, delivering the HTTP headers and payload encryptation necessary to make the HTTP request. It also provides some HTTP facilities as serialize data to send.
+**Pusha** is a library implemented in C/C++ to make **Web Push** requests. The library aims to provide a easy interface that, supplying the necessary information, will deal with all the complexity, delivering the HTTP headers and payload encryptation needed to make the HTTP request. It also provides some HTTP facilities as serialize data to send.
 
 **Pusha** brings 2 tools to assist:
 * [genkey](#genkey) will generate a pair of *private*/*public* keys needed to send web push requests;
@@ -13,7 +13,7 @@ It depends of:
 * [CMake](https://cmake.org/) - to build **Pusha**;
 * [OpenSSL](https://www.openssl.org/);
 * [ECEC](https://github.com/web-push-libs/ecec);
-* C compiler;
+* C/C++ compiler;
 
 ## Build
 
@@ -41,7 +41,7 @@ $ cmake -DWITH_TOOLS=1 -DWITH_EXAMPLES=1 ..
 ```
 ## Tools
 
-> Build **pusha** with *-DWITH_TOOLS=1* to compile the tools.
+> :warning: Build **pusha** with *-DWITH_TOOLS=1* to compile the tools.
 
 ### genkey
 
@@ -149,13 +149,13 @@ Output with verbose mode ON (-v).
 > The **pusha** tool is a good source to learn how to use the **pusha** library. It construct the push request step by step using some "internal" structures, learning how to manipulate the library.
 ## Examples
 
-> Build **pusha** with -DWITH_EXAMPLES=1 to compile the examples.
+> :warning: Build **pusha** with -DWITH_EXAMPLES=1 to compile the examples.
 
 There are two examples that shows how to use the **Pusha** library. The examples will print the information as a HTTP request should be. Both examples begin importing the *private* key from a PEM file. The only diference is the interface used:
 * *web_push*: call the **pusha_notify** function, that populates the *pusha_http_headers* and *pusha_payload* (if any payload is present);
 * *web_push_http*: call the **pusha_notify_http** function, that populates the *pusha_http_header*;
-
-The examples are equivalent, it only changes the structure that holds the values. The description of the function/structures can be checked at *pusha.h*, *pusha/web_push.h* and *pusha/http.h*.
+* *genkey_cpp*: is a implementation of the [genkey tool](#genkey), but using the CPP interface;
+* *notify_cpp*: use the CPP *pusha::notify* class to create the push request.
 
 ## See also
 

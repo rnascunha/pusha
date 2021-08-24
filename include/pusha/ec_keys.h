@@ -1,5 +1,5 @@
-#ifndef PUSHA_EC_KEY_HPP__
-#define PUSHA_EC_KEY_HPP__
+#ifndef PUSHA_EC_KEY_H__
+#define PUSHA_EC_KEY_H__
 
 #include <openssl/ec.h>
 
@@ -23,4 +23,4 @@ int export_public_key_pem(EC_KEY* key, const char* path);
 }
 #endif /* __cplusplus */
 
-#endif /* PUSHA_EC_KEY_HPP__ */
+#endif /* PUSHA_EC_KEY_H__ */

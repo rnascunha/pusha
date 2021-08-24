@@ -114,8 +114,6 @@ static int
 make_encrypt_header(pusha_http_headers* headers,
 					pusha_payload* pp)
 {
-//	size_t cryptoKeyHeaderLen = 0;
-//	size_t encryptionHeaderLen = 0;
 	int err = ECE_OK;
 
 	/* getting sizes of headers */
@@ -193,10 +191,9 @@ int make_pusha_http_headers(pusha_http_headers* headers,
 	}
 	memcpy(headers->crypto_key, P256ECDSA_HEADER, P256ECDSA_HEADER_SIZE);
 	memcpy(headers->crypto_key + P256ECDSA_HEADER_SIZE, token->public_key, strlen(token->public_key));
-//	snprintf(headers->crypto_key, size + 1, "p256ecdsa=%s", token->public_key);
 
 	str_len = strlen(token->token);
-	headers->authorization_len = AUTHORIZATION_HEADER_SIZE + str_len;//snprintf(NULL, 0, "WebPush %s", token->token);
+	headers->authorization_len = AUTHORIZATION_HEADER_SIZE + str_len;
 	headers->authorization = calloc(headers->authorization_len, 1);
 	if(!headers->authorization)
 	{
@@ -205,7 +202,6 @@ int make_pusha_http_headers(pusha_http_headers* headers,
 	}
 	memcpy(headers->authorization, AUTHORIZATION_HEADER, AUTHORIZATION_HEADER_SIZE);
 	memcpy(headers->authorization + AUTHORIZATION_HEADER_SIZE, token->token, str_len);
-//	snprintf(headers->authorization, size + 1, "WebPush %s", token->token);
 end:
 	if(ret != ECE_OK)
 	{

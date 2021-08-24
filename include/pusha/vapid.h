@@ -1,5 +1,5 @@
-#ifndef PUSHA_VAPID_HPP__
-#define PUSHA_VAPID_HPP__
+#ifndef PUSHA_VAPID_H__
+#define PUSHA_VAPID_H__
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -30,4 +30,4 @@ void free_vapid(vapid*);
 #endif /* __cplusplus */
 
 
-#endif /* PUSHA_VAPID_HPP__ */
+#endif /* PUSHA_VAPID_H__ */

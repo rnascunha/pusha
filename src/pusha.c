@@ -1,10 +1,11 @@
 #include "pusha.h"
 #include <string.h>
+#include <stdio.h>
 
 int pusha_notify(pusha_http_headers* headers,
 			pusha_payload* pp,
 			EC_KEY*	key,
-			const char* endpoint, size_t	endpoint_len,
+			const char* endpoint, size_t endpoint_len,
 			const char* subscriber, size_t subscriber_len,
 			const char* p256dh, size_t p256dh_len,
 			const char* auth, size_t auth_len,
@@ -60,7 +61,7 @@ end:
 
 int pusha_notify_http(pusha_http_request* req,
 			EC_KEY*	key,
-			const char* endpoint, size_t	endpoint_len,
+			const char* endpoint, size_t endpoint_len,
 			const char* subscriber, size_t subscriber_len,
 			const char* p256dh, size_t p256dh_len,
 			const char* auth, size_t auth_len,

@@ -1,5 +1,5 @@
-#ifndef PUSHA_HELPER_HPP__
-#define PUSHA_HELPER_HPP__
+#ifndef PUSHA_HELPER_H__
+#define PUSHA_HELPER_H__
 
 #include <stdlib.h>
 
@@ -13,4 +13,4 @@ size_t host_path_separator(const char* endpoint, size_t endpoint_len, char** hos
 }
 #endif /* __cplusplus */
 
-#endif /* PUSHA_HELPER_HPP__ */
+#endif /* PUSHA_HELPER_H__ */

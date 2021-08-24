@@ -1,5 +1,5 @@
-#ifndef PUSHA_WEB_PUSH_HPP__
-#define PUSHA_WEB_PUSH_HPP__
+#ifndef PUSHA_WEB_PUSH_H__
+#define PUSHA_WEB_PUSH_H__
 
 #include <stdint.h>
 #include "vapid.h"
@@ -77,4 +77,4 @@ int make_pusha_http_headers(pusha_http_headers* headers,
 }
 #endif /* __cplusplus */
 
-#endif /* PUSHA_WEB_PUSH_HPP__ */
+#endif /* PUSHA_WEB_PUSH_H__ */
