@@ -7,7 +7,8 @@ notify::notify(key const& ec_key, std::string_view const& subscriber)
 	: sub_(subscriber), key_(ec_key){}
 
 notify::notify(key&& ec_key, std::string_view const& subscriber)
-	: sub_(subscriber), key_(std::move(ec_key)){}
+	: sub_(subscriber), key_(std::move(ec_key))
+{}
 
 notify::notify(EC_KEY* key, std::string_view const& subscriber)
 	: sub_(subscriber), key_(key)
