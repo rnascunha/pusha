@@ -33,6 +33,7 @@ key::key(key&& ec_key) noexcept
 {
 	key_ = EC_KEY_dup(ec_key.get_key());
 	EC_KEY_free(ec_key.get_key());
+	ec_key.key_ = NULL;
 }
 
 key::key(EC_KEY* key) noexcept

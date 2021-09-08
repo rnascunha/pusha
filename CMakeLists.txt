@@ -77,3 +77,6 @@ if(DEFINED WITH_EXAMPLES)
 		target_link_libraries(notify_cpp PUBLIC ${PROJECT_NAME})
 	endif()
 endif()
+
+#add_executable(test examples/test.cpp)
+#target_link_libraries(test PUBLIC ${PROJECT_NAME})
