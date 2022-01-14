@@ -1,5 +1,7 @@
 # Pusha
 
+[![Build](https://github.com/rnascunha/pusha/actions/workflows/main.yml/badge.svg)](https://github.com/rnascunha/pusha/actions/workflows/main.yml)
+
 **Pusha** is a library implemented in C/C++ to make **Web Push** requests. The library aims to provide a easy interface that, supplying the necessary information, will deal with all the complexity, delivering the HTTP headers and payload encryptation needed to make the HTTP request. It also provides some HTTP facilities as serialize data to send.
 
 **Pusha** brings 3 tools to assist:
@@ -14,7 +16,7 @@ It depends of:
 * [CMake](https://cmake.org/) - to build **Pusha**;
 * [OpenSSL](https://www.openssl.org/);
 * [ECEC](https://github.com/web-push-libs/ecec);
-* C/C++ compiler;
+* C/C++ compiler (GCC/Clang);
 
 ## Build
 
