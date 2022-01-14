@@ -1,0 +1,46 @@
+name: Build
+on: 
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      WITH_TOOLS:
+         description: Compile with tools
+         required: true
+         default: '1' 
+      WITH_EXAMPLES:
+        description: Compile with examples
+        required: true
+        default: '1'
+env:
+  WITH_TOOLS: ${{ github.event.inputs.WITH_TOOLS || '1' }}
+  WITH_EXAMPLES: ${{ github.event.inputs.WITH_EXAMPLES || '1' }}
+jobs:
+  build:
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - name: Ubuntu GCC
+            os: ubuntu-latest
+            cc: gcc
+            cxx: g++
+          - name: Ubuntu Clang
+            os: ubuntu-latest
+            cc: clang
+            cxx: clang++
+    steps:
+      - name: Checking out repostitory
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Build library
+        id: build-library
+        run: |
+          mkdir build
+          cd build
+          cmake -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.config.cxx}} -DWITH_TOOLS=$WITH_TOOLS -DWITH_EXAMPLES=$WITH_EXAMPLES ..
+          cmake --build .
+  

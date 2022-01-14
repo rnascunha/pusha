@@ -341,12 +341,12 @@ uint8_t* http_request_serialize2(pusha_http_request* req, size_t* packet_size)
 
 	if(packet_size) *packet_size = size;
 
-	size_t count = snprintf(request, size, "%s\r\n", req->start_line);;
+	size_t count = snprintf((char*)request, size, "%s\r\n", req->start_line);;
 	for(size_t i = 0; i < req->header_count; i++)
 	{
-		count += snprintf(request + count, size - count, "%s: %s\r\n", req->headers[i].key, req->headers[i].value);
+		count += snprintf((char*)request + count, size - count, "%s: %s\r\n", req->headers[i].key, req->headers[i].value);
 	}
-	count += snprintf(request + count, size - count, "\r\n"); //End of header \r\n
+	count += snprintf((char*)request + count, size - count, "\r\n"); //End of header \r\n
 
 	if(req->body_len)
 	{
