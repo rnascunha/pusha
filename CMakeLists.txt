@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
-project(pusha)
-
-#find_package(OpenSSL 1.1.0 REQUIRED)
+project(pusha VERSION 0.1)
 
 add_subdirectory(third/ecec)
 
@@ -32,7 +30,7 @@ set(SRCS_CPP	${SRC_CPP_DIR}/error.cpp
 
 add_library(${PROJECT_NAME} ${SRCS} ${SRCS_CPP})
 target_include_directories(${PROJECT_NAME}
-	PUBLIC third/ecec/include
+	PRIVATE third/ecec/include
   	PUBLIC include
 	PUBLIC include_cpp)
 
@@ -80,3 +78,34 @@ endif()
 
 #add_executable(test examples/test.cpp)
 #target_link_libraries(test PUBLIC ${PROJECT_NAME})
+
+########################################
+# Installing
+########################################
+install(TARGETS ${PROJECT_NAME} DESTINATION lib)
+install(DIRECTORY "include/"
+        		DESTINATION "include")
+install(DIRECTORY "include_cpp/"
+        		DESTINATION "include/cpp")
+if(DEFINED WITH_TOOLS)
+	if(${WITH_TOOLS} EQUAL 1)
+		install(TARGETS genkey pusha-bin export_key 
+			DESTINATION bin) 
+	endif()
+endif()
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/README.md" 
+				"${CMAKE_CURRENT_SOURCE_DIR}/LICENSE"
+				"${CMAKE_CURRENT_SOURCE_DIR}/URL.txt"
+			DESTINATION doc)
+
+#########################################
+# Packing // https://cmake.org/cmake/help/latest/module/CPack.html
+#########################################
+include(InstallRequiredSystemLibraries)
+set(CPACK_PACKAGE_VENDOR		"xeds corp")
+set(CPACK_PACKAGE_DESCRIPTION	"C/C++ Web Push Notification library")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "C/C++ Web Push Notification")
+set(CPACK_PACKAGE_HOMEPAGE_URL 	"https://rnascunha.github.io/agro")
+set(CPACK_RESOURCE_FILE_README 	"${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+include(CPack)
