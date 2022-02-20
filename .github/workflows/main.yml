@@ -31,6 +31,14 @@ jobs:
             os: ubuntu-latest
             cc: clang
             cxx: clang++
+          - name: Windows Latest MSVC
+            os: windows-latest
+            cc: cl
+            cxx: cl
+          - name: Window Latest MinGW
+            os: windows-latest
+            cc: gcc
+            cxx: g++
     steps:
       - name: Checking out repostitory
         uses: actions/checkout@v2

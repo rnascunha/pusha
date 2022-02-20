@@ -4,28 +4,30 @@
 
 #include <stdio.h>
 #ifdef __unix__
-#include <unistd.h>
+#	include <unistd.h>
 #endif /* __unix__ */
 #include <string.h>
 
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
-#ifdef __unix__
-#include <sys/socket.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
+#ifdef __WIN32__
 
-#define SOCKET_TYPE		int
-#define CLOSE(x)	close(x)
+#	include <winsock2.h>
+#	include <ws2tcpip.h>
+
+#	define SOCKET_TYPE		SOCKET
+#	define CLOSE(x)			closesocket(x)
 
 #else
-#include <winsock2.h>
-#include <ws2tcpip.h>
 
-#define SOCKET_TYPE		SOCKET
-#define CLOSE(x)		closesocket(x)
+#	include <sys/socket.h>
+#	include <netdb.h>
+#	include <netinet/in.h>
+#	include <arpa/inet.h>
+
+#	define SOCKET_TYPE		int
+#	define CLOSE(x)	close(x)
 
 #endif
 

@@ -36,8 +36,8 @@ target_include_directories(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME} PUBLIC ece)
 
-if(WIN32)
-	target_link_libraries(${PROJECT_NAME} PUBLIC wsock32 ws2_32)
+if(WIN32 OR ${CMAKE_SYSTEM} MATCHES "^MINGW")
+	target_link_libraries(${PROJECT_NAME} PUBLIC ws2_32 wsock32)
 endif()
 
 #
@@ -46,6 +46,7 @@ endif()
 if(DEFINED WITH_TOOLS)
 	if(${WITH_TOOLS} EQUAL 1)
 		set(TOOLS_DIR	tools)
+		
 		add_executable(genkey ${TOOLS_DIR}/genkey.c)
 		target_link_libraries(genkey PUBLIC ${PROJECT_NAME})
 		
