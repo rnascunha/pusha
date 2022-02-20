@@ -35,6 +35,11 @@ target_include_directories(${PROJECT_NAME}
 	PUBLIC include_cpp)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC ece)
+
+if(WIN32)
+	target_link_libraries(${PROJECT_NAME} PUBLIC wsock32 ws2_32)
+endif()
+
 #
 # TOOLS
 #
@@ -47,8 +52,8 @@ if(DEFINED WITH_TOOLS)
 		add_executable(${PROJECT_NAME}-bin ${TOOLS_DIR}/pusha.c)
 		target_link_libraries(${PROJECT_NAME}-bin PUBLIC ${PROJECT_NAME})
 		# Setting name
-		set_target_properties(${PROJECT_NAME}-bin
-        	PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
+#		set_target_properties(${PROJECT_NAME}-bin
+#        	PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
         	
         add_executable(export_key ${TOOLS_DIR}/export_key.c)
 		target_link_libraries(export_key PUBLIC ${PROJECT_NAME})

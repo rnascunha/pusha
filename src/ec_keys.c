@@ -4,6 +4,13 @@
 
 #include <string.h>
 
+#ifdef _MSC_VER
+#	pragma warning(push)
+#	pragma warning(disable: 4152)
+#	include <openssl/applink.c>
+#	pragma warning(pop)
+#endif
+
 #include <openssl/pem.h>
 #include <openssl/obj_mac.h>
 
@@ -49,7 +56,7 @@ import_private_key(const char* b64PrivKeyPemFormat)
 {
 	size_t pv_key_len = strlen(b64PrivKeyPemFormat);
 	BIO *mem = BIO_new(BIO_s_mem());
-	if ((size_t)BIO_write(mem, b64PrivKeyPemFormat, pv_key_len) != pv_key_len)
+	if ((size_t)BIO_write(mem, b64PrivKeyPemFormat, (int)pv_key_len) != pv_key_len)
 	{
 		return NULL;
 	}

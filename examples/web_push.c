@@ -46,7 +46,7 @@ int main()
 	/**
 	 * Setting the expiration time to 12h
 	 */
-	unsigned expiration = time(NULL) + 12 * 60 * 60;
+	unsigned expiration = (unsigned)time(NULL) + 12 * 60 * 60;
 	/**
 	 * HTTP TTL header
 	 */
@@ -97,11 +97,11 @@ int main()
 	 * with the push message (payload != NULL). It will hold the encrypted
 	 * payload and some other info needed
 	 */
-	pusha_payload pp = {};
+	pusha_payload pp = {0};
 	/**
 	 * This will hold the HTTP headers processed
 	 */
-	pusha_http_headers headers = {};
+	pusha_http_headers headers = {0};
 	headers.ttl = ttl;
 
 	int err = pusha_notify(&headers,

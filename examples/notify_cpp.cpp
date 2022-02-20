@@ -48,7 +48,7 @@ int main()
 	/**
 	 * Setting the expiration time to 12h
 	 */
-	unsigned expiration = time(NULL) + 12 * 60 * 60;
+	unsigned expiration = (unsigned)time(NULL) + 12 * 60 * 60;
 
 	/**
 	 * You can make a push request with or without payload. If you don't need payload,

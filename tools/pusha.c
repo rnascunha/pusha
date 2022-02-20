@@ -5,6 +5,10 @@
 
 #include "pusha.h"
 
+#if _WIN32
+#include <winsock2.h>
+#endif
+
 void usage(const char* program)
 {
 	printf("Usage:\n\t%s -h|(-p <pem_priv_file>|-b <base64_priv_key>) [-v]\n\t\t[-m <message>] "
@@ -36,11 +40,10 @@ int main(int argc, char** argv)
 {
 	int ret = 0, verbose = 0;
 	EC_KEY* key = NULL;
-	uint32_t exp = time(NULL) + (12 * 60 * 60); //12h
+	uint32_t exp = (uint32_t)time(NULL) + (12 * 60 * 60); //12h
 	char* sub = NULL, *p256dh = NULL, *auth = NULL,
 		*endpoint = NULL, *payload = NULL;
-	size_t sub_len, endpoint_len, p256dh_len, auth_len;
-
+	size_t sub_len = 0, endpoint_len = 0, p256dh_len = 0, auth_len = 0;
 
 	enum Output output = output_send;
 
@@ -154,7 +157,7 @@ int main(int argc, char** argv)
 				ret = 1;
 				goto end;
 			}
-			exp = time(NULL) + sec;
+			exp = (uint32_t)time(NULL) + sec;
 			argc--;
 		}
 		else if(strcmp(argv[i], "-m") == 0)
@@ -236,6 +239,17 @@ int main(int argc, char** argv)
 		ret = 1;
 		goto end;
 	}
+	
+#if _WIN32
+	WSADATA wsaData;
+	int iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    if (iResult != 0) 
+	{
+        printf("WSAStartup failed: %d\n", iResult);
+        ret = 1;
+		goto end;
+    }
+#endif
 
 	/**
 	 * To generate the vapid token, we must pass just the host from the subscription

@@ -63,7 +63,7 @@ bool key::check() const noexcept
 
 bool key::import(const std::filesystem::path& path) noexcept
 {
-	key_ = import_private_key_pem_file(path.c_str());
+	key_ = import_private_key_pem_file(reinterpret_cast<const char*>(path.c_str()));
 	return key_ ? true : false;
 }
 
@@ -90,12 +90,12 @@ std::string_view key::export_public_key() const noexcept
 
 bool key::export_private_key(std::filesystem::path const& path) const noexcept
 {
-	return ::export_private_key_pem(key_, path.c_str()) == ECE_OK;
+	return ::export_private_key_pem(key_, reinterpret_cast<const char*>(path.c_str())) == ECE_OK;
 }
 
 bool key::export_public_key(std::filesystem::path const& path) const noexcept
 {
-	return ::export_public_key_pem(key_, path.c_str()) == ECE_OK;
+	return ::export_public_key_pem(key_, reinterpret_cast<const char*>(path.c_str())) == ECE_OK;
 }
 
 EC_KEY const* key::get_key() const noexcept

@@ -33,14 +33,14 @@ static int make_header(pusha_http_header* header,
 }
 
 static int make_header_unsigned(pusha_http_header* header,
-					unsigned value,
+					size_t value,
 					const char* key)
 {
-	size_t value_len = snprintf(NULL, 0, "%u", value);
+	size_t value_len = snprintf(NULL, 0, "%zu", value);
 	header->value = calloc(value_len + 1, 1);
 	if(!header->value) return 0;
 
-	snprintf(header->value, value_len + 1, "%u", value);
+	snprintf(header->value, value_len + 1, "%zu", value);
 	header->key = key;
 
 	return 1;
@@ -219,6 +219,8 @@ char* http_request_header_serialize(const char* endpoint,
 		const void* cypher_payload, size_t payload_len,
 		size_t* header_size)
 {
+	(void)cypher_payload;
+	
 	char* output;
 	size_t size;
 	if(header_size) *header_size = 0;
