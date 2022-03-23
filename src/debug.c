@@ -3,24 +3,13 @@
 #include "pusha/helper.h"
 
 #include <stdio.h>
-#ifdef __unix__
-#	include <unistd.h>
-#endif /* __unix__ */
 #include <string.h>
 
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
-#ifdef __WIN32__
-
-#	include <winsock2.h>
-#	include <ws2tcpip.h>
-
-#	define SOCKET_TYPE		SOCKET
-#	define CLOSE(x)			closesocket(x)
-
-#else
-
+#ifdef __unix__
+#	include <unistd.h>
 #	include <sys/socket.h>
 #	include <netdb.h>
 #	include <netinet/in.h>
@@ -28,7 +17,12 @@
 
 #	define SOCKET_TYPE		int
 #	define CLOSE(x)	close(x)
+#else
+#	include <winsock2.h>
+#	include <ws2tcpip.h>
 
+#	define SOCKET_TYPE		SOCKET
+#	define CLOSE(x)			closesocket(x)
 #endif
 
 static void print_array(const uint8_t* payload, size_t length, size_t break_line)

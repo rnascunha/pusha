@@ -4,13 +4,6 @@
 
 #include <string.h>
 
-#ifdef _MSC_VER
-#	pragma warning(push)
-#	pragma warning(disable: 4152)
-#	include <openssl/applink.c>
-#	pragma warning(pop)
-#endif
-
 #include <openssl/pem.h>
 #include <openssl/obj_mac.h>
 
@@ -79,13 +72,11 @@ import_private_key(const char* b64PrivKeyPemFormat)
 
 EC_KEY* import_private_key_pem_file(const char* path)
 {
-	FILE* fp = fopen(path, "rb");
-	if(!fp)
-	{
-		return NULL;
-	}
-	EC_KEY *EC_KEY_ptr = PEM_read_ECPrivateKey(fp, NULL, NULL, NULL);
-	fclose(fp);
+	BIO* fp = BIO_new_file(path, "rb");
+	if(!fp) return NULL;
+
+	EC_KEY *EC_KEY_ptr = PEM_read_bio_ECPrivateKey(fp, NULL, NULL, NULL);
+	BIO_free(fp);
 
 	if(EC_KEY_ptr == NULL)
 	{
@@ -131,25 +122,21 @@ char* export_private_key(EC_KEY const* key)
 
 int export_private_key_pem(EC_KEY* key, const char* path)
 {
-	if(!key)
+	if (!key)
 	{
 		return PUSHA_ERROR_INVALID_KEY;
 	}
-	FILE* fp = NULL;
 
-	fp = fopen(path, "wb");
-	if(!fp)
+	BIO* fp = NULL;
+	fp = BIO_new_file(path, "wb");
+	if (!fp)
 	{
 		return PUSHA_ERROR_OPEN_FILE;
 	}
-	if(!PEM_write_ECPrivateKey(fp, key, NULL, NULL, 0, NULL, NULL))
-	{
-		fclose(fp);
-		return PUSHA_ERROR_WRITE_KEY;
-	}
-	fclose(fp);
+	int ret = PEM_write_bio_ECPrivateKey(fp, key, NULL, NULL, 0, NULL, NULL);
+	BIO_free(fp);
 
-	return ECE_OK;
+	return ret ? ECE_OK : PUSHA_ERROR_WRITE_KEY;
 }
 
 int export_public_key_pem(EC_KEY* key, const char* path)
@@ -158,21 +145,18 @@ int export_public_key_pem(EC_KEY* key, const char* path)
 	{
 		return PUSHA_ERROR_INVALID_KEY;
 	}
-	FILE* fp = NULL;
 
-	fp = fopen(path, "wb");
+	BIO* fp = NULL;
+	fp = BIO_new_file(path, "wb");
 	if(!fp)
 	{
 		return PUSHA_ERROR_OPEN_FILE;
 	}
-	if(!PEM_write_EC_PUBKEY(fp, key))
-	{
-		fclose(fp);
-		return PUSHA_ERROR_WRITE_KEY;
-	}
-	fclose(fp);
+	
+	int ret = PEM_write_bio_EC_PUBKEY(fp, key);
+	BIO_free(fp);
 
-	return ECE_OK;
+	return ret ? ECE_OK : PUSHA_ERROR_WRITE_KEY;
 }
 
 char* export_public_key(EC_KEY const* key)
