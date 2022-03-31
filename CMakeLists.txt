@@ -5,7 +5,7 @@ add_subdirectory(third/ecec)
 
 if(MSVC)
 	message(STATUS "MSVC build")
-	set(CMAKE_CXX_FLAGS "/W4 /std:c++17 /EHsc")
+	set(CMAKE_CXX_FLAGS "/W4 /std:c++17 /EHa")
 	set(CMAKE_CXX_FLAGS_RELEASE "/O2")
 else()
 	message(STATUS "NO MSVC build")
@@ -54,8 +54,8 @@ if(DEFINED WITH_TOOLS)
 		add_executable(${PROJECT_NAME}-bin ${TOOLS_DIR}/pusha.c)
 		target_link_libraries(${PROJECT_NAME}-bin PUBLIC ${PROJECT_NAME})
 		# Setting name
-#		set_target_properties(${PROJECT_NAME}-bin
-#        	PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
+		set_target_properties(${PROJECT_NAME}-bin
+        	PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
         	
         add_executable(export_key ${TOOLS_DIR}/export_key.c)
 		target_link_libraries(export_key PUBLIC ${PROJECT_NAME})
@@ -82,9 +82,6 @@ if(DEFINED WITH_EXAMPLES)
 		target_link_libraries(notify_cpp PUBLIC ${PROJECT_NAME})
 	endif()
 endif()
-
-#add_executable(test examples/test.cpp)
-#target_link_libraries(test PUBLIC ${PROJECT_NAME})
 
 ########################################
 # Installing
