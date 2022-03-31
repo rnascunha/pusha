@@ -105,11 +105,12 @@ install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/README.md"
 #########################################
 # Packing // https://cmake.org/cmake/help/latest/module/CPack.html
 #########################################
-#include(InstallRequiredSystemLibraries)
-set(CPACK_PACKAGE_VENDOR		"xeds corp")
-set(CPACK_PACKAGE_DESCRIPTION	"C/C++ Web Push Notification library")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "C/C++ Web Push Notification")
-set(CPACK_PACKAGE_HOMEPAGE_URL 	"https://rnascunha.github.io/agro")
-set(CPACK_RESOURCE_FILE_README 	"${CMAKE_CURRENT_SOURCE_DIR}/README.md")
-set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
-#include(CPack)
+if(NOT WIN32)
+	include(InstallRequiredSystemLibraries)
+	set(CPACK_PACKAGE_VENDOR		"xeds corp")
+	set(CPACK_PACKAGE_DESCRIPTION	"C/C++ Web Push Notification library")
+	set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "C/C++ Web Push Notification")
+	set(CPACK_RESOURCE_FILE_README 	"${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+	set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+	include(CPack)
+endif()

@@ -16,7 +16,7 @@ It depends of:
 * [CMake](https://cmake.org/) - to build **Pusha**;
 * [OpenSSL](https://www.openssl.org/);
 * [ECEC](https://github.com/web-push-libs/ecec);
-* C/C++ compiler (GCC/Clang);
+* C/C++ compiler (GCC/Clang/MSVC);
 
 ## Build
 
