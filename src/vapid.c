@@ -1,7 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <getopt.h>
+//#include <getopt.h>
+#include <inttypes.h>
 
 #include <openssl/bn.h>
 #include <openssl/sha.h>
