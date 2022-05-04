@@ -4,7 +4,6 @@
 
 #include <stdio.h>
 #include <unistd.h>
-//#include <inttypes.h>
 #include <string.h>
 
 #include <sys/socket.h>
