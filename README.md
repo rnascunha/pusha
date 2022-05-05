@@ -16,7 +16,7 @@ It depends of:
 * [CMake](https://cmake.org/) - to build **Pusha**;
 * [OpenSSL](https://www.openssl.org/);
 * [ECEC](https://github.com/web-push-libs/ecec);
-* C/C++ compiler (GCC/Clang);
+* C/C++ compiler (GCC/Clang/MSVC);
 
 ## Build
 
@@ -151,7 +151,7 @@ Output with verbose mode ON (-v).
 
 > The **pusha** tool is a good source to learn how to use the **pusha** library. It construct the push request step by step using some "internal" structures, learning how to manipulate the library.
 
-###export_key
+### export_key
 
 This tool will export a public key in base64url encoded, and/or PEM file. The input private key can also be a PEM file format, or base64url.
 

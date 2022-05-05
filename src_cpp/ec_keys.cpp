@@ -63,7 +63,11 @@ bool key::check() const noexcept
 
 bool key::import(const std::filesystem::path& path) noexcept
 {
-	key_ = import_private_key_pem_file(path.c_str());
+#ifdef __unix__
+	key_ = import_private_key_pem_file(reinterpret_cast<const char*>(path.c_str()));
+#else /* __unix__ */
+	key_ = import_private_key_pem_file(reinterpret_cast<const char*>(path.string().c_str()));
+#endif /* __unix__ */
 	return key_ ? true : false;
 }
 
@@ -90,12 +94,20 @@ std::string_view key::export_public_key() const noexcept
 
 bool key::export_private_key(std::filesystem::path const& path) const noexcept
 {
-	return ::export_private_key_pem(key_, path.c_str()) == ECE_OK;
+#ifdef __unix__
+	return ::export_private_key_pem(key_, reinterpret_cast<const char*>(path.c_str())) == ECE_OK;
+#else /* __unix__ */
+	return ::export_private_key_pem(key_, reinterpret_cast<const char*>(path.string().c_str())) == ECE_OK;
+#endif /* __unix__ */
 }
 
 bool key::export_public_key(std::filesystem::path const& path) const noexcept
 {
-	return ::export_public_key_pem(key_, path.c_str()) == ECE_OK;
+#ifdef __unix__
+	return ::export_public_key_pem(key_, reinterpret_cast<const char*>(path.c_str())) == ECE_OK;
+#else /* __unix__ */
+	return ::export_public_key_pem(key_, reinterpret_cast<const char*>(path.string().c_str())) == ECE_OK;
+#endif /* __unix__ */
 }
 
 EC_KEY const* key::get_key() const noexcept

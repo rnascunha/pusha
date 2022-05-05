@@ -5,7 +5,7 @@ add_subdirectory(third/ecec)
 
 if(MSVC)
 	message(STATUS "MSVC build")
-	set(CMAKE_CXX_FLAGS "/W4 /std:c++17 /EHsc")
+	set(CMAKE_CXX_FLAGS "/W4 /std:c++17 /EHa")
 	set(CMAKE_CXX_FLAGS_RELEASE "/O2")
 else()
 	message(STATUS "NO MSVC build")
@@ -29,18 +29,25 @@ set(SRCS_CPP	${SRC_CPP_DIR}/error.cpp
 				${SRC_CPP_DIR}/notify.cpp)
 
 add_library(${PROJECT_NAME} ${SRCS} ${SRCS_CPP})
+
 target_include_directories(${PROJECT_NAME}
 	PRIVATE third/ecec/include
   	PUBLIC include
 	PUBLIC include_cpp)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC ece)
+
+if(WIN32 OR ${CMAKE_SYSTEM} MATCHES "^MINGW")
+	target_link_libraries(${PROJECT_NAME} PUBLIC ws2_32 wsock32)
+endif()
+
 #
 # TOOLS
 #
 if(DEFINED WITH_TOOLS)
 	if(${WITH_TOOLS} EQUAL 1)
 		set(TOOLS_DIR	tools)
+		
 		add_executable(genkey ${TOOLS_DIR}/genkey.c)
 		target_link_libraries(genkey PUBLIC ${PROJECT_NAME})
 		
@@ -76,9 +83,6 @@ if(DEFINED WITH_EXAMPLES)
 	endif()
 endif()
 
-#add_executable(test examples/test.cpp)
-#target_link_libraries(test PUBLIC ${PROJECT_NAME})
-
 ########################################
 # Installing
 ########################################
@@ -101,11 +105,12 @@ install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/README.md"
 #########################################
 # Packing // https://cmake.org/cmake/help/latest/module/CPack.html
 #########################################
-include(InstallRequiredSystemLibraries)
-set(CPACK_PACKAGE_VENDOR		"xeds corp")
-set(CPACK_PACKAGE_DESCRIPTION	"C/C++ Web Push Notification library")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "C/C++ Web Push Notification")
-set(CPACK_PACKAGE_HOMEPAGE_URL 	"https://rnascunha.github.io/agro")
-set(CPACK_RESOURCE_FILE_README 	"${CMAKE_CURRENT_SOURCE_DIR}/README.md")
-set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
-include(CPack)
+if(NOT WIN32)
+	include(InstallRequiredSystemLibraries)
+	set(CPACK_PACKAGE_VENDOR		"xeds corp")
+	set(CPACK_PACKAGE_DESCRIPTION	"C/C++ Web Push Notification library")
+	set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "C/C++ Web Push Notification")
+	set(CPACK_RESOURCE_FILE_README 	"${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+	set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+	include(CPack)
+endif()

@@ -3,15 +3,27 @@
 #include "pusha/helper.h"
 
 #include <stdio.h>
-#include <unistd.h>
 #include <string.h>
 
-#include <sys/socket.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
+
+#ifdef __unix__
+#	include <unistd.h>
+#	include <sys/socket.h>
+#	include <netdb.h>
+#	include <netinet/in.h>
+#	include <arpa/inet.h>
+
+#	define SOCKET_TYPE		int
+#	define CLOSE(x)	close(x)
+#else
+#	include <winsock2.h>
+#	include <ws2tcpip.h>
+
+#	define SOCKET_TYPE		SOCKET
+#	define CLOSE(x)			closesocket(x)
+#endif
 
 static void print_array(const uint8_t* payload, size_t length, size_t break_line)
 {
@@ -221,7 +233,7 @@ int send_web_push(const char* endpoint,
 	memcpy(host_str, host, sep);
 	host_str[sep] = '\0';
 
-	struct addrinfo hints = {}, *res, *result;
+	struct addrinfo hints = {0}, *res, *result;
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
 
@@ -235,7 +247,7 @@ int send_web_push(const char* endpoint,
 		goto end;
 	}
 
-	int sock;
+	SOCKET_TYPE sock = 0;
 	char addr_str[100];
 	for (res = result; res != NULL; res = res->ai_next)
 	{
@@ -254,10 +266,14 @@ int send_web_push(const char* endpoint,
 						(void*)&((struct sockaddr_in6 *) res->ai_addr)->sin6_addr :
 						(void*)&((struct sockaddr_in *) res->ai_addr)->sin_addr,
 						addr_str, 100));
+#if __unix__
 		if (connect(sock, res->ai_addr, res->ai_addrlen) != -1)
+#else
+		if (connect(sock, res->ai_addr, (int)res->ai_addrlen) != -1)
+#endif
 			break;
 
-		close(sock);
+		CLOSE(sock);
 	}
 	freeaddrinfo(result);
 
@@ -282,7 +298,11 @@ int send_web_push(const char* endpoint,
 		SSL_CTX_free(ctx);
 		goto end;
 	}
+#ifdef __unix__
 	SSL_set_fd(ssl, sock);
+#else
+	SSL_set_fd(ssl, (int)sock);
+#endif
 	err = SSL_connect(ssl);
 	if (err <= 0)
 	{
@@ -296,7 +316,7 @@ int send_web_push(const char* endpoint,
 	 * Sending packet
 	 */
 	PUSHA_PRINT(verbose, "* Sending SSL packet\n");
-	err = SSL_write(ssl, request, request_len);
+	err = SSL_write(ssl, request, (int)request_len);
 	if (err < 0)
 	{
 		PUSHA_ERROR("*- Error sending SSL packet [%d]\n", err);
@@ -326,7 +346,7 @@ ssl_end:
 	SSL_shutdown(ssl);
 	SSL_free(ssl);
 	SSL_CTX_free(ctx);
-	close(sock);
+	CLOSE(sock);
 end:
 	free(request);
 	return ret;

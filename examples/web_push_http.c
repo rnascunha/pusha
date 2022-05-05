@@ -42,7 +42,7 @@ int main()
 	/**
 	 * Setting the expiration time to 12h
 	 */
-	unsigned expiration = time(NULL) + 12 * 60 * 60;
+	unsigned expiration = (unsigned)time(NULL) + 12 * 60 * 60;
 	/**
 	 * HTTP TTL header
 	 */

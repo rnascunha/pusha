@@ -171,7 +171,6 @@ int make_pusha_http_headers(pusha_http_headers* headers,
 					pusha_payload* pp)
 {
 	int ret = ECE_OK;
-	size_t size;
 
 	if(pp)
 	{

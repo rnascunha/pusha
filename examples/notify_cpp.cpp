@@ -42,13 +42,13 @@ int main()
 	 */
 	std::string_view subscriber{"mailto:email@company.com"},	//Your contact
 				//The follow 3 information you get when subscribe (allow) to receive a push message
-				p256dh{"BEEsArqCAa8j9yBp5JwQYFJyEzdFBUQHw1oOb4_ucrkiA1vy44Y429mH734ve53bFQ2yYnQ0BXQts-kZl_F5I8A"},
-				auth{"0AZOLIFaBr1aqk2D-Rmptg"},
-				endpoint{"https://fcm.googleapis.com/fcm/send/eYcBt_gjfMQ:APA91bFQeZolEdNtJNdZL-5cyCD_4ipI6XY4Q2xa2fxqlbkgTEbzOEzk5zRZC-VSQHd8cN-dDaXKaYSErQaH07atQlTFOLOf91yr5fBhcj9KaEY4z2RL6WvztOt-3zS7MQ17ic9b7MYM"};
+				p256dh{"BCYAAu--swcaVqGCAEIh7FrODamcs9YumukP76AZO6wRywB4QVjqrheQTE1IBXRebrlxiJS5AKGyvYgke41dpn0"},
+				auth{"wT81SK5SuI3cNOETU0-WyA"},
+				endpoint{"https://fcm.googleapis.com/fcm/send/cFBmu0-QzuE:APA91bEjmvlAw78AJLcvUYMF1FNBNJXR1dqUslcaP3pJ-tMtpdoAEgFOjYujzHT7Kbz3kdMKUYjymvJzRnh2GvWTjEuRhVSaM6PBal6AyWRql_yAGmhAzmx1DiwMSTerUgN8wDaMZ6fD"};
 	/**
 	 * Setting the expiration time to 12h
 	 */
-	unsigned expiration = time(NULL) + 12 * 60 * 60;
+	unsigned expiration = (unsigned)time(NULL) + 12 * 60 * 60;
 
 	/**
 	 * You can make a push request with or without payload. If you don't need payload,
