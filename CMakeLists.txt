@@ -40,7 +40,7 @@ endif()
 # TOOLS
 #
 if(DEFINED WITH_TOOLS)
-	if(${WITH_TOOLS} EQUAL 1)
+	if(${WITH_TOOLS})
 		include(tools/tools.cmake)
 	endif()
 endif()
@@ -49,7 +49,7 @@ endif()
 #EXAMPLES
 #
 if(DEFINED WITH_EXAMPLES)
-	if(${WITH_EXAMPLES} EQUAL 1)
+	if(${WITH_EXAMPLES})
 		include(examples/examples.cmake)
 	endif()
 endif()
