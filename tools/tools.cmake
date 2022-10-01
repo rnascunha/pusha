@@ -1,6 +1,6 @@
 set(TOOLS_DIR	tools)
 set(TOOLS genkey export_key)
-set(OUTPUT_TOOL tool)
+set(OUTPUT_TOOL tools)
 
 foreach(tool ${TOOLS})
     add_executable(${tool} ${TOOLS_DIR}/${tool}.c)

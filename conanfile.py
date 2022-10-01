@@ -14,7 +14,7 @@ class PushaConan(ConanFile):
     generators = "cmake_find_package"
     exports = "LICENSE", "README.md", "URL.txt"
     exports_sources = "third/*", "*.c", "*.cpp", "*.h", "*.hpp", "*.cmake", "CMakeLists.txt"
-    requires = "openssl/1.1.1f"
+    requires = "openssl/1.1.1q"
 
     def config_options(self):
         if self.settings.os == "Windows":
@@ -27,15 +27,24 @@ class PushaConan(ConanFile):
         cmake.build()
 
     def package(self):
-        self.copy("*.h", dst="include", src="src")
-        self.copy("*.hpp", dst="include_cpp", src="src")
+        #ECEC depends
+        self.copy("*.h", dst="third", src="third")
+        self.copy("*.c", dst="third", src="third")
+        #C API
+        self.copy("*.h", dst="include", src="include")
         self.copy("*.c", dst="src", src="src")
+        #CPP API
         self.copy("*.cpp", dst="src", src="src_cpp")
+        self.copy("*.hpp", dst="include", src="include_cpp")
+        #libs
         self.copy("*.dll", dst="bin", keep_path=False)
         self.copy("*.so", dst="lib", keep_path=False)
         self.copy("*.dylib", dst="lib", keep_path=False)
         self.copy("*.a", dst="lib", keep_path=False)
+        #tools
+        # self.copy("*", dst="bin", src="tools", keep_path=False)
 
     def package_info(self):
+        self.cpp_info.includedirs = ["include", "third/ecec/include"]
         self.cpp_info.libs = ["pusha"]
 

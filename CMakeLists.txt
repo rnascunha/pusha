@@ -39,19 +39,15 @@ endif()
 #
 # TOOLS
 #
-if(DEFINED WITH_TOOLS)
-	if(${WITH_TOOLS})
-		include(tools/tools.cmake)
-	endif()
+if(${WITH_TOOLS})
+	include(tools/tools.cmake)
 endif()
 
 #
 #EXAMPLES
 #
-if(DEFINED WITH_EXAMPLES)
-	if(${WITH_EXAMPLES})
-		include(examples/examples.cmake)
-	endif()
+if(${WITH_EXAMPLES})
+	include(examples/examples.cmake)
 endif()
 
 ########################################
@@ -62,11 +58,9 @@ install(DIRECTORY "include/"
         		DESTINATION "include")
 install(DIRECTORY "include_cpp/"
         		DESTINATION "include/cpp")
-if(DEFINED WITH_TOOLS)
-	if(${WITH_TOOLS} EQUAL 1)
-		install(TARGETS genkey pusha export_key 
-			DESTINATION bin) 
-	endif()
+if(${WITH_TOOLS})
+	install(TARGETS genkey pusha export_key 
+		DESTINATION bin) 
 endif()
 install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/README.md" 
 				"${CMAKE_CURRENT_SOURCE_DIR}/LICENSE"
