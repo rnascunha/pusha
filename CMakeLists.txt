@@ -1,10 +1,13 @@
 cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
 project(pusha LANGUAGES C CXX VERSION 0.1)
 
-add_subdirectory(third/ecec)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})
+list(APPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
 
-# list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})
-# list(APPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
+option(WITH_TOOLS "compile tools" FALSE)
+option(WITH_EXAMPLES "compile examples" FALSE)
+
+add_subdirectory(third/ecec)
 
 if(MSVC)
 	set(CMAKE_CXX_FLAGS "/W4 /EHa")
@@ -57,7 +60,7 @@ install(TARGETS ${PROJECT_NAME} DESTINATION lib)
 install(DIRECTORY "include/"
         		DESTINATION "include")
 install(DIRECTORY "include_cpp/"
-        		DESTINATION "include/cpp")
+        		DESTINATION "include")
 if(${WITH_TOOLS})
 	install(TARGETS genkey pusha export_key 
 		DESTINATION bin) 

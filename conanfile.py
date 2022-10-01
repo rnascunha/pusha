@@ -42,7 +42,9 @@ class PushaConan(ConanFile):
         self.copy("*.dylib", dst="lib", keep_path=False)
         self.copy("*.a", dst="lib", keep_path=False)
         #tools
-        # self.copy("*", dst="bin", src="tools", keep_path=False)
+        self.copy("genkey", dst="bin", src="tools", keep_path=False)
+        self.copy("export_key", dst="bin", src="tools", keep_path=False)
+        self.copy("pusha", dst="bin", src="tools", keep_path=False)
 
     def package_info(self):
         self.cpp_info.includedirs = ["include", "third/ecec/include"]
