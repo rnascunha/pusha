@@ -48,5 +48,5 @@ class PushaConan(ConanFile):
 
     def package_info(self):
         self.cpp_info.includedirs = ["include", "third/ecec/include"]
-        self.cpp_info.libs = ["pusha"]
+        self.cpp_info.libs = ["pusha", "ece"]
 

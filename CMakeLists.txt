@@ -21,7 +21,8 @@ endif()
 include(files.cmake)
 
 add_library(${PROJECT_NAME} ${SRCS} ${SRCS_CPP})
-add_library(${PRJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+
 set_target_properties(${PROJECT_NAME} PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
