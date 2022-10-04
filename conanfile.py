@@ -1,4 +1,5 @@
-from conans import ConanFile, CMake, tools
+from conans import ConanFile, CMake
+from conans.model.version import Version
 
 class PushaConan(ConanFile):
     name = "pusha"
@@ -15,6 +16,10 @@ class PushaConan(ConanFile):
     exports = "LICENSE", "README.md", "URL.txt"
     exports_sources = "third/*", "*.c", "*.cpp", "*.h", "*.hpp", "*.cmake", "CMakeLists.txt"
     requires = "openssl/1.1.1q"
+
+    def build_requirements(self):
+        if CMake.get_version() < Version("3.10"):
+            self.tool_requires("cmake/[>= 3.10]")
 
     def config_options(self):
         if self.settings.os == "Windows":
@@ -41,6 +46,7 @@ class PushaConan(ConanFile):
         self.copy("*.so", dst="lib", keep_path=False)
         self.copy("*.dylib", dst="lib", keep_path=False)
         self.copy("*.a", dst="lib", keep_path=False)
+        self.copy("*.lib", dst="lib", keep_path=False)
         #tools
         self.copy("genkey", dst="bin", src="tools", keep_path=False)
         self.copy("export_key", dst="bin", src="tools", keep_path=False)
