@@ -57,21 +57,6 @@ endif()
 ########################################
 # Installing
 ########################################
-# install(TARGETS ${PROJECT_NAME}
-# 		DESTINATION lib)
-# install(DIRECTORY "include/"
-#         		DESTINATION "include")
-# install(DIRECTORY "include_cpp/"
-#         		DESTINATION "include")
-# if(WITH_TOOLS)
-# 	install(TARGETS genkey pusha export_key 
-# 		DESTINATION bin) 
-# endif()
-# install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/README.md" 
-# 				"${CMAKE_CURRENT_SOURCE_DIR}/LICENSE"
-# 				"${CMAKE_CURRENT_SOURCE_DIR}/URL.txt"
-# 			DESTINATION doc)
-
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
 	"${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
