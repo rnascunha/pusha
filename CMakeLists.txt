@@ -30,9 +30,9 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 )
 
 target_include_directories(${PROJECT_NAME}
-	PRIVATE third/ecec/include
-  	PUBLIC include
-	PUBLIC include_cpp)
+	PRIVATE ${PROJECT_SOURCE_DIR}/third/ecec/include #$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/third/ecec/include> $<INSTALL_INTERFACE:include>
+  	PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>
+	PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include_cpp> $<INSTALL_INTERFACE:include>)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC ece)
 
@@ -43,33 +43,68 @@ endif()
 #
 # TOOLS
 #
-if(${WITH_TOOLS})
+if(WITH_TOOLS)
 	include(tools/tools.cmake)
 endif()
 
 #
 #EXAMPLES
 #
-if(${WITH_EXAMPLES})
+if(WITH_EXAMPLES)
 	include(examples/examples.cmake)
 endif()
 
 ########################################
 # Installing
 ########################################
-install(TARGETS ${PROJECT_NAME} DESTINATION lib)
-install(DIRECTORY "include/"
-        		DESTINATION "include")
-install(DIRECTORY "include_cpp/"
-        		DESTINATION "include")
-if(${WITH_TOOLS})
-	install(TARGETS genkey pusha export_key 
-		DESTINATION bin) 
+# install(TARGETS ${PROJECT_NAME}
+# 		DESTINATION lib)
+# install(DIRECTORY "include/"
+#         		DESTINATION "include")
+# install(DIRECTORY "include_cpp/"
+#         		DESTINATION "include")
+# if(WITH_TOOLS)
+# 	install(TARGETS genkey pusha export_key 
+# 		DESTINATION bin) 
+# endif()
+# install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/README.md" 
+# 				"${CMAKE_CURRENT_SOURCE_DIR}/LICENSE"
+# 				"${CMAKE_CURRENT_SOURCE_DIR}/URL.txt"
+# 			DESTINATION doc)
+
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+	"${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
+	VERSION ${PROJECT_VERSION}
+	COMPATIBILITY AnyNewerVersion)
+
+install(TARGETS ${PROJECT_NAME} ece
+		EXPORT "${PROJECT_NAME}Targets"
+		LIBRARY DESTINATION lib
+		PUBLIC_HEADER DESTINATION include)
+
+set(INSTALL_DIR "lib/cmake/${PROJECT_NAME}")
+configure_package_config_file(
+	"${PROJECT_SOURCE_DIR}/cmake/${PROJECT_NAME}Config.cmake.in"
+	"${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+	INSTALL_DESTINATION ${INSTALL_DIR})
+
+install(EXPORT "${PROJECT_NAME}Targets" DESTINATION ${INSTALL_DIR})
+install(FILES 	"${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
+				"${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+		DESTINATION ${INSTALL_DIR})
+install(DIRECTORY 	"${PROJECT_SOURCE_DIR}/include/" 
+					"${PROJECT_SOURCE_DIR}/include_cpp/"
+		DESTINATION include
+		FILES_MATCHING 
+		PATTERN "*.h" PATTERN "*.hpp")
+if(WITH_TOOLS)
+	install(TARGETS genkey pusha-bin export_key
+			DESTINATION bin)
 endif()
-install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/README.md" 
-				"${CMAKE_CURRENT_SOURCE_DIR}/LICENSE"
-				"${CMAKE_CURRENT_SOURCE_DIR}/URL.txt"
-			DESTINATION doc)
+install(FILES 	"${PROJECT_SOURCE_DIR}/README.md"
+				"${PROJECT_SOURCE_DIR}/LICENSE"
+		DESTINATION "doc/${PROJECT_NAME}")
 
 #########################################
 # Packing // https://cmake.org/cmake/help/latest/module/CPack.html
