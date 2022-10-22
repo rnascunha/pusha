@@ -15,6 +15,7 @@ on:
 env:
   WITH_TOOLS: ${{ github.event.inputs.WITH_TOOLS || '1' }}
   WITH_EXAMPLES: ${{ github.event.inputs.WITH_EXAMPLES || '1' }}
+  BUILD_TYPE: Release
 jobs:
   build:
     name: ${{ matrix.config.name }}
@@ -25,30 +26,75 @@ jobs:
         config:
           - name: Ubuntu GCC
             os: ubuntu-latest
+            compiler: gcc
+            version: 9
             cc: gcc
             cxx: g++
+            generator: Unix Makefiles
+
           - name: Ubuntu Clang
             os: ubuntu-latest
+            compiler: clang
+            version: 11
             cc: clang
             cxx: clang++
+            generator: Unix Makefiles
+
           - name: Windows Latest MSVC
             os: windows-latest
+            compiler: Visual Studio
+            version: 17
             cc: cl
             cxx: cl
-          - name: Window Latest MinGW
-            os: windows-latest
-            cc: gcc
-            cxx: g++
+            generator: Visual Studio 17 2022
+
+          # - name: Window Latest MinGW
+          #   os: windows-latest
+          #   compiler: gcc
+          #   version: 11.2
+          #   cc: gcc
+          #   cxx: g++
+          #   generator: MinGW Makefiles
+
     steps:
       - name: Checking out repostitory
         uses: actions/checkout@v2
         with:
           submodules: recursive
-      - name: Build library
-        id: build-library
+      - name: Install Conan
+        uses: turtlebrowser/get-conan@main
+
+      - name: Create default Conan profile
         run: |
-          mkdir build
-          cd build
-          cmake -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.config.cxx}} -DWITH_TOOLS=$WITH_TOOLS -DWITH_EXAMPLES=$WITH_EXAMPLES ..
-          cmake --build .
+          conan profile new default --detect
+          conan profile update settings.compiler='${{matrix.config.compiler}}' default
+          conan profile update settings.compiler.version=${{matrix.config.version}} default
+
+      - name: Config LIBCXX
+        if: ${{matrix.config.name != 'Windows Latest MSVC'}}
+        run: conan profile update settings.compiler.libcxx=libstdc++11 default
+
+      - name: Conan install dependencies
+        run: >
+          conan install .
+          -s build_type=${{env.BUILD_TYPE}}
+          -if ${{github.workspace}}/build
+          -pr default
+          -b missing
+
+      - name: CMake configure
+        run: >
+          cmake -G "${{matrix.config.generator}}"
+          -DCMAKE_C_COMPILER=${{matrix.config.cc}}
+          -DCMAKE_CXX_COMPILER=${{matrix.config.cxx}}
+          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+          -DWITH_TOOLS=${{github.event.inputs.WITH_TOOLS}}
+          -DWITH_EXAMPLES=${{github.event.inputs.WITH_EXAMPLES}}
+          -B ${{github.workspace}}/build
+
+      - name: Build library
+        run: >
+          cmake
+          --build ${{github.workspace}}/build
+          --config ${{env.BUILD_TYPE}}
   

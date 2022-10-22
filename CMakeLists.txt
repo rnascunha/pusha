@@ -1,39 +1,38 @@
 cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
-project(pusha VERSION 0.1)
+project(pusha LANGUAGES C CXX VERSION 0.1)
+
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})
+list(APPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
+
+option(WITH_TOOLS "compile tools" FALSE)
+option(WITH_EXAMPLES "compile examples" FALSE)
 
 add_subdirectory(third/ecec)
 
 if(MSVC)
-	message(STATUS "MSVC build")
-	set(CMAKE_CXX_FLAGS "/W4 /std:c++17 /EHa")
+	set(CMAKE_CXX_FLAGS "/W4 /EHa")
 	set(CMAKE_CXX_FLAGS_RELEASE "/O2")
 else()
-	message(STATUS "NO MSVC build")
-	set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-unused-parameter -std=c++17")
+	set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-unused-parameter -pedantic")# -fno-exceptions -fno-rtti")
 	set(CMAKE_CXX_FLAGS_DEBUG "-g")
 	set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 endif()
 
-set(SRC_DIR	src)
-set(SRCS	${SRC_DIR}/vapid.c
-			${SRC_DIR}/web_push.c
-			${SRC_DIR}/ec_keys.c
-			${SRC_DIR}/http.c
-			${SRC_DIR}/debug.c
-			${SRC_DIR}/helper.c
-			${SRC_DIR}/pusha.c)
-			
-set(SRC_CPP_DIR	src_cpp)
-set(SRCS_CPP	${SRC_CPP_DIR}/error.cpp
-				${SRC_CPP_DIR}/ec_keys.cpp
-				${SRC_CPP_DIR}/notify.cpp)
+include(files.cmake)
 
 add_library(${PROJECT_NAME} ${SRCS} ${SRCS_CPP})
+add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+    CXX_EXTENSIONS OFF
+)
 
 target_include_directories(${PROJECT_NAME}
-	PRIVATE third/ecec/include
-  	PUBLIC include
-	PUBLIC include_cpp)
+	PRIVATE ${PROJECT_SOURCE_DIR}/third/ecec/include #$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/third/ecec/include> $<INSTALL_INTERFACE:include>
+  	PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>
+	PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include_cpp> $<INSTALL_INTERFACE:include>)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC ece)
 
@@ -44,63 +43,53 @@ endif()
 #
 # TOOLS
 #
-if(DEFINED WITH_TOOLS)
-	if(${WITH_TOOLS} EQUAL 1)
-		set(TOOLS_DIR	tools)
-		
-		add_executable(genkey ${TOOLS_DIR}/genkey.c)
-		target_link_libraries(genkey PUBLIC ${PROJECT_NAME})
-		
-		add_executable(${PROJECT_NAME}-bin ${TOOLS_DIR}/pusha.c)
-		target_link_libraries(${PROJECT_NAME}-bin PUBLIC ${PROJECT_NAME})
-		# Setting name
-		set_target_properties(${PROJECT_NAME}-bin
-        	PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
-        	
-        add_executable(export_key ${TOOLS_DIR}/export_key.c)
-		target_link_libraries(export_key PUBLIC ${PROJECT_NAME})
-	endif()
+if(WITH_TOOLS)
+	include(tools/tools.cmake)
 endif()
 
 #
 #EXAMPLES
 #
-if(DEFINED WITH_EXAMPLES)
-	if(${WITH_EXAMPLES} EQUAL 1)
-		set(EXAMPLES_DIR examples)
-		
-		add_executable(web_push_example ${EXAMPLES_DIR}/web_push.c)
-		target_link_libraries(web_push_example PUBLIC ${PROJECT_NAME})
-		
-		add_executable(web_push_http_example ${EXAMPLES_DIR}/web_push_http.c)
-		target_link_libraries(web_push_http_example PUBLIC ${PROJECT_NAME})
-		
-		add_executable(genkey_cpp ${EXAMPLES_DIR}/genkey_cpp.cpp)
-		target_link_libraries(genkey_cpp PUBLIC ${PROJECT_NAME})
-			
-		add_executable(notify_cpp ${EXAMPLES_DIR}/notify_cpp.cpp)
-		target_link_libraries(notify_cpp PUBLIC ${PROJECT_NAME})
-	endif()
+if(WITH_EXAMPLES)
+	include(examples/examples.cmake)
 endif()
 
 ########################################
 # Installing
 ########################################
-install(TARGETS ${PROJECT_NAME} DESTINATION lib)
-install(DIRECTORY "include/"
-        		DESTINATION "include")
-install(DIRECTORY "include_cpp/"
-        		DESTINATION "include/cpp")
-if(DEFINED WITH_TOOLS)
-	if(${WITH_TOOLS} EQUAL 1)
-		install(TARGETS genkey pusha-bin export_key 
-			DESTINATION bin) 
-	endif()
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+	"${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
+	VERSION ${PROJECT_VERSION}
+	COMPATIBILITY AnyNewerVersion)
+
+install(TARGETS ${PROJECT_NAME} ece
+		EXPORT "${PROJECT_NAME}Targets"
+		LIBRARY DESTINATION lib
+		PUBLIC_HEADER DESTINATION include)
+
+set(INSTALL_DIR "lib/cmake/${PROJECT_NAME}")
+configure_package_config_file(
+	"${PROJECT_SOURCE_DIR}/cmake/${PROJECT_NAME}Config.cmake.in"
+	"${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+	INSTALL_DESTINATION ${INSTALL_DIR})
+
+install(EXPORT "${PROJECT_NAME}Targets" DESTINATION ${INSTALL_DIR})
+install(FILES 	"${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
+				"${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+		DESTINATION ${INSTALL_DIR})
+install(DIRECTORY 	"${PROJECT_SOURCE_DIR}/include/" 
+					"${PROJECT_SOURCE_DIR}/include_cpp/"
+		DESTINATION include
+		FILES_MATCHING 
+		PATTERN "*.h" PATTERN "*.hpp")
+if(WITH_TOOLS)
+	install(TARGETS genkey pusha-bin export_key
+			DESTINATION bin)
 endif()
-install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/README.md" 
-				"${CMAKE_CURRENT_SOURCE_DIR}/LICENSE"
-				"${CMAKE_CURRENT_SOURCE_DIR}/URL.txt"
-			DESTINATION doc)
+install(FILES 	"${PROJECT_SOURCE_DIR}/README.md"
+				"${PROJECT_SOURCE_DIR}/LICENSE"
+		DESTINATION "doc/${PROJECT_NAME}")
 
 #########################################
 # Packing // https://cmake.org/cmake/help/latest/module/CPack.html
